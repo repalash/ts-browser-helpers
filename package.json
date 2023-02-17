@@ -41,6 +41,9 @@
   "dependencies": {
     "@types/wicg-file-system-access": "^2020.9.5"
   },
+  "optionalDependencies": {
+    "win-node-env": "^0.6.1"
+  },
   "browserslist": [
     "defaults"
   ]

@@ -78,3 +78,45 @@ export async function createScriptFromURL(url: string, root = document.head): Pr
     })
 }
 
+
+/**
+ * Sets the innerHTML of an element and recreates all script tags so they are executed.
+ * @param element - element to set the innerHTML of
+ * @param html - innerHTML string to set
+ */
+export async function setInnerHTMLWithScripts(element: HTMLElement, html: string) {
+    element.innerHTML = html
+    const scripts = element.getElementsByTagName('script')
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    for (let i = 0; i < scripts.length; i++) {
+        const script = scripts[i]
+        const newScript = cloneScriptTag(script)
+        let err = false
+        await new Promise(resolve => {
+            newScript.onload = resolve
+            newScript.onerror = () => {
+                err = true
+                resolve(undefined)
+            }
+        })
+        if (err) continue
+        script.parentNode?.replaceChild(newScript, script)
+    }
+}
+
+/**
+ * Clones a script tag.
+ * @param script - script tag to clone
+ * @param newScript - optional new script tag to clone into. If not provided a new script tag will be created.
+ */
+export function cloneScriptTag(script: HTMLScriptElement, newScript?: HTMLScriptElement) {
+    newScript = newScript ?? document.createElement('script')
+    newScript.type = script.type || 'text/javascript'
+    newScript.text = script.text
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    for (let j = 0; j < script.attributes.length; j++) {
+        const attr = script.attributes[ j ]
+        newScript.setAttribute(attr.name, attr.value)
+    }
+    return newScript
+}
