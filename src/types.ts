@@ -64,7 +64,7 @@ export type Fof<TReturn extends any = void, TArgs extends any[] = []> = (...args
 /**
  * Type for a value of type T or a function that returns a value of type T
  */
-export type ValOrFunc<T> = T | Fof<T>
+export type ValOrFunc<T, TArgs extends any[] = any[]> = T | Fof<T, TArgs>
 
 /**
  * Type for a value of type T or an array of values of type T
