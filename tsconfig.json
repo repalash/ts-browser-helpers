@@ -8,6 +8,7 @@
         "module": "es2020",
         "noImplicitAny": true,
         "declaration": true,
+        "declarationMap": true,
         "declarationDir": "dist",
         "noImplicitThis": true,
         "noUnusedLocals": true,
