@@ -1,18 +1,19 @@
 {
   "name": "ts-browser-helpers",
-  "version": "0.1.0",
-  "description": "A collection of utility classes and functions for javascript/typescript projects, for use in the browser.",
+  "version": "0.3.0",
+  "description": "A collection of utility classes, functions and decorators for javascript/typescript projects, for use in the browser.",
   "main": "src/index.ts",
-  "module": "src/index.ts",
+  "module": "dist/bundle.esm.js",
   "types": "src/index.ts",
   "sources": "src/index.ts",
+  "sideEffects": false,
   "scripts": {
     "new:pack": "npm run prepare && clean-package && npm pack && clean-package restore",
     "new:publish": "npm run prepare && clean-package && npm publish && clean-package restore",
-    "build": "NODE_ENV=production rollup -c",
+    "build": "rimraf dist ; NODE_ENV=production rollup -c",
     "dev": "rollup -c -w",
     "serve-docs": "ws -d docs -p 8080",
-    "docs": "npx typedoc --readme none ./src/index.ts",
+    "docs": "rimraf docs ; npx typedoc --readme none ./src/index.ts",
     "prepare": "npm run build && npm run docs"
   },
   "clean-package": {
@@ -58,6 +59,7 @@
   },
   "homepage": "https://github.com/repalash/ts-browser-helpers#readme",
   "devDependencies": {
+    "rimraf": "^5.0.1",
     "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-json": "^5.0.1",
     "@rollup/plugin-node-resolve": "^15.0.1",
@@ -68,8 +70,9 @@
     "rollup": "^3.4.0",
     "rollup-plugin-license": "^3.0.1",
     "tslib": "^2.4.1",
-    "typedoc": "^0.23.24",
-    "typescript": "^4.9.3"
+    "typedoc": "^0.24.7",
+    "typescript": "^4.9.3",
+    "typedoc-plugin-markdown": "^3.15.3"
   },
   "dependencies": {
     "@types/wicg-file-system-access": "^2020.9.5"

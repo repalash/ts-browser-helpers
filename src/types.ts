@@ -86,8 +86,8 @@ export interface IDisposable {
 /**
  * Interface for objects that can be serialized to JSON, with to and from JSON methods
  */
-export interface IJSONSerializable {
-    toJSON(meta?: any): any;
-    fromJSON(data: any, meta?: any): this|null|Promise<this|null>;
+export interface IJSONSerializable<T=any, TM=any> {
+    toJSON(meta?: TM): T;
+    fromJSON(data: T, meta?: TM): this|null|Promise<this|null>;
 }
 

@@ -81,65 +81,49 @@ export function replaceAll(str: string, find: string, replace: string) {
 }
 
 /**
- * A template literal tag that does nothing. Useful for syntax highlighting of GLSL code.
- *
- * @example
- * ```js
- * const vertexShader = glsl`
- *    void main() {}
- * `
- * ```
- * @category Template Literals
+ * Replace a string in a text, optionally prepending, appending, replacing all occurrences, and/or calling a callback if the string is not found
+ * @param source - The source text
+ * @param str - The string to replace
+ * @param newStr - The replacement string
+ * @param replaceAll - Replace all occurrences
+ * @param prepend - Prepend the replacement string
+ * @param append - Append the replacement string
+ * @param notFoundCallback - Callback to call if the string is not found
  */
-export const glsl = (strings: any, ...rest: any[]) => String.raw({raw: strings} as TemplateStringsArray, ...rest)
+export function safeReplaceString(source: string, str: string, newStr: string, {
+    replaceAll = false,
+    prepend = false,
+    append = false,
+    notFoundCallback = () => {},
+} = {}) {
+    if (notFoundCallback) {
+        if (!source.includes(str)) {
+            notFoundCallback()
+            return source
+        }
+    }
+    let s = newStr
+    if (prepend) {
+        s = newStr + str
+    } else if (append) {
+        s = str + newStr
+    }
+    return replaceAll ? source.replaceAll(str, s) : source.replace(str, s)
+}
 
 /**
- * A template literal tag that does nothing. Useful for syntax highlighting of CSS code.
- *
- * @example
- * ```js
- * const vertexShader = css`
- *    .my-class {
- *        color: red;
- *    }
- * `
- * ```
- * @category Template Literals
+ * Find the longest common prefix in an array of strings
+ * https://stackoverflow.com/questions/68702774/longest-common-prefix-in-javascript
+ * @param words
  */
-export const css = (strings: any, ...rest: any[]) => String.raw({raw: strings} as TemplateStringsArray, ...rest)
-
-/**
- * A template literal tag that does nothing. Useful for syntax highlighting of HTML code.
- *
- * @example
- * ```js
- * const vertexShader = html`
- *    <div class="my-class">
-*        <p>Some text</p>
- *    </div>
- * `
- * ```
- * @category Template Literals
- */
-export const html = (strings: any, ...rest: any[]) => String.raw({raw: strings} as TemplateStringsArray, ...rest)
-
-
-// /**
-//  * String.prototype.replaceAll() polyfill
-//  * https://gomakethings.com/how-to-replace-a-section-of-a-string-with-another-one-with-vanilla-js/
-//  * @author Chris Ferdinandi
-//  * @license MIT
-//  */
-// if (!String.prototype.replaceAll) {
-//     String.prototype.replaceAll = function(str, newStr) {
-//
-//         // If a regex pattern
-//         if (Object.prototype.toString.call(str).toLowerCase() === '[object regexp]') {
-//             return this.replace(str, newStr as any)
-//         }
-//
-//         // If a string
-//         return this.replace(new RegExp(str, 'g'), newStr as any)
-//
-//     }
-// }
+export function longestCommonPrefix(words: string[]): string {
+    words.sort() // shortest string will be first and the longest last
+    return (
+        words[0].split('') // converts shortest word to an array of chars
+            .map((char, idx) => words[words.length - 1][idx] === char ? char : '\0') // replaces non-matching chars with NULL char
+            .join('') // converts back to a string
+            .split('\0') // splits the string by NULL characters
+            .at(0) // returns the first part
+        || ''
+    )
+}

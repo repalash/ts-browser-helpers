@@ -40,3 +40,15 @@ export function pathJoin(parts: string[], separator: string = '/'): string {
     // const replace = new RegExp(separator + '{1,}', 'g')
     return parts.join(separator)// .replace(replace, separator) //todo fix: replace breaks https://raw to https:/raw
 }
+
+/**
+ * Returns a blob:// URL which points to a javascript file which will call importScripts with the given URL, to be used for cross-origin workers.
+ * https://stackoverflow.com/questions/21913673/execute-web-worker-from-different-origin
+ * @param url - URL to the worker js file
+ * @param wasmURL - optional wasm file URL, will be passed to a created Module.locateFile (for emscripten)
+ */
+export function remoteWorkerURL(url: string, wasmURL?: string) {
+    const content = (wasmURL ? `var Module = { locateFile: function(s) { return "${ wasmURL }"; } }; \n` : '')
+        + `importScripts( "${ url }" );`
+    return URL.createObjectURL(new Blob([content], {type: 'text/javascript'}))
+}

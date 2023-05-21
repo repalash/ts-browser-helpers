@@ -44,3 +44,11 @@ export function getKeyByValue(object: Record<string, any>, value: any) {
     return Object.keys(object).find(key => object[key] === value)
 }
 
+/**
+ * Check if an object has a property. Same as {@link Object.hasOwn} or {@link Object.hasOwnProperty}
+ * @param o
+ * @param v
+ */
+export function objectHasOwn(o: object, v: PropertyKey){
+    return Object.hasOwn ? Object.hasOwn(o, v) : o.hasOwnProperty(v)
+}

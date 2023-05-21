@@ -1,6 +1,7 @@
 import {ImageCanvasOptions} from "./image";
-import {svgToCanvas, svgToPng, svgUrl} from "./svg";
+import {svgToCanvas, svgToPng} from "./svg";
 import {blobToDataURL} from "./browser";
+import {svgUrl} from './template-literals'
 
 const defaultDownloader = async(url: string) => blobToDataURL(await (await fetch(url)).blob())
 

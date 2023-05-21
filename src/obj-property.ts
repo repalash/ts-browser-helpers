@@ -70,10 +70,11 @@ export function getOrCall<T>(s: ValOrFunc<T | undefined>, ...args: any[]): T|und
  *
  * @category JS Object
  */
-export function copyProps(source: AnyOptions, dest: AnyOptions, propList: string[]) {
+export function copyProps<T = AnyOptions>(source: Record<keyof T, any>, dest: T, propList: (keyof T)[]): T {
     for (const str of propList) {
         const s = source[str]
         if (s !== undefined) safeSetProperty(dest, str, s, true)
         // if (s !== undefined) dest[str] = s
     }
+    return dest
 }

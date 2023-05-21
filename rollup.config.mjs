@@ -13,7 +13,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const { name } = packageJson
+const { name, version, author } = packageJson
 const { main, module, browser } = packageJson["clean-package"].replace
 const isProduction = process.env.NODE_ENV === 'production'
 
@@ -58,17 +58,12 @@ export default {
       sourceMap: false
     }),
     license({
-      banner: {
-        content: {
-          file: path.join(__dirname, 'LICENSE'),
-          encoding: 'utf-8', // Default is utf-8
-        },
-        data() {
-          return {
-            foo: 'foo',
-          };
-        },
-      },
+      banner: `
+        @license
+        ${name} v${version}
+        Copyright 2022<%= moment().format('YYYY') > 2022 ? '-' + moment().format('YYYY') : null %> ${author}
+        ${packageJson.license} License
+      `,
       thirdParty: {
         output: path.join(__dirname, 'dist', 'dependencies.txt'),
         includePrivate: true, // Default is false.

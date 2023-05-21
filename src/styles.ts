@@ -1,5 +1,5 @@
 import {createStyles} from "./dom";
-import {css} from "./text";
+import {css} from "./template-literals";
 
 /**
  * Styles the default scrollbar to be more pretty and less intrusive (especially on dark backgrounds), (similar to MacOS)
