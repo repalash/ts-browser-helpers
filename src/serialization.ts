@@ -1,4 +1,5 @@
 import {safeSetProperty} from './obj-property'
+import {findLastIndex} from './misc'
 
 /**
  * Serializer interface for primitive, array and struct/custom object types
@@ -72,22 +73,22 @@ export class Serialization{
     ]
 
     static GetSerializer(obj: any){
-        return this.Serializers.find(s => s.isType(obj))
+        return Serialization.Serializers.find(s => s.isType(obj))
     }
 
     static RegisterSerializer(...serializers: Serializer[]){
         for (const serializer of serializers) {
-            const priority = serializer.priority || 1e10
-            const i = this.Serializers.findIndex(s => s.priority && s.priority < priority)
-            if (i >= 0) this.Serializers.splice(i, 0, serializer)
-            else this.Serializers.push(serializer)
+            const priority = serializer.priority ?? 1e10
+            const i = findLastIndex(Serialization.Serializers, s => s.priority !== undefined && s.priority < priority)
+            if (i >= 0) Serialization.Serializers.splice(i+1, 0, serializer)
+            else Serialization.Serializers.push(serializer)
         }
     }
 
     static UnregisterSerializer(...serializers: Serializer[]){
         for (const serializer of serializers) {
-            const i = this.Serializers.indexOf(serializer)
-            if (i >= 0) this.Serializers.splice(i, 1)
+            const i = Serialization.Serializers.indexOf(serializer)
+            if (i >= 0) Serialization.Serializers.splice(i, 1)
         }
     }
 
@@ -153,7 +154,7 @@ export class Serialization{
                 if(!data) console.warn(`Resource ${data.resource} with uuid ${data.uuid} not found`)
                 if(obj === data) return obj // same object
                 if(data && typeof data === 'object' ) {
-                    const isDeserializedClass = data.contructor !== Object // data is already deserialized
+                    const isDeserializedClass = (data.contructor||Object) !== Object // data is already deserialized
                     if(isDeserializedClass) {
                         if (!obj) {
                             return data
@@ -184,8 +185,8 @@ export class Serialization{
                 return obj
             }
         }
-        if(data && typeof data === 'object' && data.contructor !== Object){
-            console.warn('Data might already be deserialized. It will be cloned, or copied to source', data, "source", obj)
+        if(data && typeof data === 'object' && (data.contructor||Object) !== Object){
+            console.warn('Data might already be deserialized. It will be cloned, or copied to source', data, "source", obj, data.contructor, data.contructor !== Object)
         }
 
         // Create new object if not provided

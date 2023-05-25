@@ -12,6 +12,11 @@ npm install ts-browser-helpers
 
 Check the list of all functions, classes and types in the [API documentation](https://repalash.com/ts-browser-helpers/).
 
+## Used in
+
+- [WebGi](https://webgi.xyz/docs) - Premium Photo-realistic 3D rendering framework and tools for web applications and online commerce.
+- [ThreePipe](https://threepipe.org/) - A 3D viewer framework for the web.
+- [uiconfig.js](https://repalash.com/uiconfig.js/) - A simple, lightweight and easy to use UI configuration library for javascript/typescript projects.
 
 ## References
 

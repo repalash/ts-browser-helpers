@@ -123,3 +123,18 @@ export function imageToCanvas(image: HTMLImageElement, {
 
     return canvas
 }
+
+/**
+ * Converts an {@link ImageData} to a canvas. This creates a new canvas element and draws the image data on it.
+ * Image Data can be created from image pixels like from gl.readPixels
+ * This can be used to convert a WebGL texture/render target to a canvas/data url.
+ * @param data - image data to convert
+ */
+export function imageDataToCanvas(data: ImageData){
+    const canvas = document.createElement('canvas')
+    canvas.width = data.width
+    canvas.height = data.height
+    const context = canvas.getContext('2d')!
+    context.putImageData(data, 0, 0)
+    return canvas
+}
