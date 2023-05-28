@@ -13,7 +13,7 @@ export {escapeRegExp, getFilenameFromPath, parseFileExtension, replaceAll, toTit
 export {prettyScrollbar} from './styles'
 export {blobToDataURL, downloadBlob, downloadFile, uploadFile, mobileAndTabletCheck} from './browser'
 export {LinearToSRGB, SRGBToLinear, colorToDataUrl} from './color'
-export {onChange, serialize, serializable} from './decorators'
+export {onChange, onChange2, onChange3, serialize, serializable} from './decorators'
 export {aesGcmDecrypt, aesGcmEncrypt} from './encryption'
 export {verifyPermission, writeFile, getFileHandle, getNewFileHandle, readFile} from './fs-api'
 export {embedUrlRefs, htmlToCanvas, htmlToPng, htmlToSvg} from './htmlToImage'

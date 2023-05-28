@@ -13,7 +13,7 @@
  *
  * @category JS Object
  */
-export function deepAccessObject(access: string | string[], tar: any, throwOnInvalid = false) {
+export function deepAccessObject(access: string | string[], tar: any, throwOnInvalid = false): any {
     if (typeof access === 'string') access = access.split('.')
     while (access.length > 0) {
         if (!tar) return
@@ -40,7 +40,7 @@ export function deepAccessObject(access: string | string[], tar: any, throwOnInv
  *
  * @category JS Object
  */
-export function getKeyByValue(object: Record<string, any>, value: any) {
+export function getKeyByValue(object: Record<string, any>, value: any): string|undefined {
     return Object.keys(object).find(key => object[key] === value)
 }
 
@@ -49,6 +49,6 @@ export function getKeyByValue(object: Record<string, any>, value: any) {
  * @param o
  * @param v
  */
-export function objectHasOwn(o: object, v: PropertyKey){
+export function objectHasOwn(o: object, v: PropertyKey): boolean {
     return Object.hasOwn ? Object.hasOwn(o, v) : o.hasOwnProperty(v)
 }

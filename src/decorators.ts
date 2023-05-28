@@ -7,10 +7,20 @@ import {Serialization} from './serialization'
  * @note - Does not work with "target": "esnext" in tsconfig.json
  * @note - Requires "experimentalDecorators": true in tsconfig.json
  * @todo add example.
- * @param fnKey - use: `<MyClass>.prototype.<myFunction>` or define an arrow function: `(key, value) => {}`.
+ * @param fnKey - use: `<MyClass>.prototype.<myFunction>` or define an arrow function: `(key, value, oldValue) => {}`.
+ * @param paramType -
+ * if param, the function is called with an object parameter: `{key, value, oldValue}`,
+ * if object, the function is called with 3 parameters: `key, value, oldValue`,
+ * if void then no params are passed.
+ * Default: false.
+ *
  * @category Decorators
  */
-export function onChange(fnKey: string|AnyFunction): PropertyDecorator {
+export function onChange(
+    fnKey: string |
+        ((key: string, value: any, oldValue: any)=>void)
+        //| ((obj:{key: string, value: any, oldValue: any})=>void)
+    , paramType: 'param'|'object'|'void' = 'param'): PropertyDecorator {
     if (!fnKey) throw new Error('onChange: fnKey is undefined, make sure the function exists or provide a string')
     return (targetPrototype: any, propertyKey: string|symbol) => {
         Object.defineProperty(targetPrototype, propertyKey, {
@@ -18,9 +28,10 @@ export function onChange(fnKey: string|AnyFunction): PropertyDecorator {
                 return this[`_oc_${propertyKey as string}`]
             },
             set(newVal: any) {
-                if (this[`_oc_${propertyKey as string}`] === newVal) return
+                const oldVal = this[`_oc_${propertyKey as string}`]
+                if (oldVal === newVal) return
                 this[`_oc_${propertyKey as string}`] = newVal
-                const params = [propertyKey, newVal]
+                const params = paramType === 'param' ? [propertyKey, newVal, oldVal] : paramType === 'object' ? [{key: propertyKey, value: newVal, oldValue: oldVal}] : ''
                 if (typeof fnKey === 'string') this[fnKey]?.call(this, ...params)
                 else if (typeof fnKey === 'function') {
                     let called = false // to get functions in the prototype chain
@@ -37,13 +48,28 @@ export function onChange(fnKey: string|AnyFunction): PropertyDecorator {
                     }
                     if (!called) {
                         if (fnKey.name && this[fnKey.name].name === `bound ${fnKey.name}`) this[fnKey.name](...params)
-                        else fnKey(...params)
+                        else (<AnyFunction>fnKey)(...params as any)
                     }
                 }
             },
         })
     }
 }
+
+export function onChange2(
+    fnKey: string|AnyFunction,
+    paramType: 'param'|'object'|'void' = 'void'): PropertyDecorator {
+    if (!fnKey) throw new Error('onChange: fnKey is undefined, make sure the function exists or provide a string')
+    return onChange(fnKey, paramType)
+}
+
+export function onChange3(
+    fnKey: string|((obj:{key: string, value: any, oldValue: any})=>void),
+    paramType: 'object'|'void' = 'object'): PropertyDecorator {
+    if (!fnKey) throw new Error('onChange: fnKey is undefined, make sure the function exists or provide a string')
+    return onChange(fnKey as any, paramType)
+}
+
 
 /**
  * Decorator to mark a class property as serializable using the {@link Serialization} class.
