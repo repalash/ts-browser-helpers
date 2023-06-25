@@ -9,9 +9,9 @@ import {Serialization} from './serialization'
  * @todo add example.
  * @param fnKey - use: `<MyClass>.prototype.<myFunction>` or define an arrow function: `(key, value, oldValue) => {}`.
  * @param paramType -
- * if param, the function is called with an object parameter: `{key, value, oldValue}`,
- * if object, the function is called with 3 parameters: `key, value, oldValue`,
- * if void then no params are passed.
+ * if param, the function is called with 3 parameters: `key, value, oldValue`, default for {@link onChange}
+ * if object, the function is called with an object parameter: `{key, value, oldValue}`, default for {@link onChange3}
+ * if void then no params are passed. {@link onChange2}
  * Default: false.
  *
  * @category Decorators
@@ -56,6 +56,11 @@ export function onChange(
     }
 }
 
+/**
+ * Similar to {@link onChange}, but accepts any function and paramType defaults to 'void'. The function is called with no parameters. if 'void'
+ * @param fnKey
+ * @param paramType
+ */
 export function onChange2(
     fnKey: string|AnyFunction,
     paramType: 'param'|'object'|'void' = 'void'): PropertyDecorator {
@@ -63,13 +68,17 @@ export function onChange2(
     return onChange(fnKey, paramType)
 }
 
+/**
+ * Similar to {@link onChange}, but accepts any function and paramType defaults to 'object'. The function is called with an object parameter: `{key, value, oldValue}`.
+ * @param fnKey
+ * @param paramType
+ */
 export function onChange3(
     fnKey: string|((obj:{key: string, value: any, oldValue: any})=>void),
     paramType: 'object'|'void' = 'object'): PropertyDecorator {
     if (!fnKey) throw new Error('onChange: fnKey is undefined, make sure the function exists or provide a string')
     return onChange(fnKey as any, paramType)
 }
-
 
 /**
  * Decorator to mark a class property as serializable using the {@link Serialization} class.
