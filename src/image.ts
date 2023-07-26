@@ -128,6 +128,7 @@ export function imageToCanvas(image: HTMLImageElement, {
  * Converts an {@link ImageData} to a canvas. This creates a new canvas element and draws the image data on it.
  * Image Data can be created from image pixels like from gl.readPixels
  * This can be used to convert a WebGL texture/render target to a canvas/data url.
+ * Note: if the output is flipped, use {@link canvasFlipY} after this, like `canvasFlipY(imageDataToCanvas(imageData))`
  * @param data - image data to convert
  */
 export function imageDataToCanvas(data: ImageData){
@@ -137,4 +138,37 @@ export function imageDataToCanvas(data: ImageData){
     const context = canvas.getContext('2d')!
     context.putImageData(data, 0, 0)
     return canvas
+}
+
+
+/**
+ * Check if the browser supports exporting to webp, with the canvas.toDataURL('image/webp') method.
+ */
+export function isWebpExportSupported() {
+    const elem = document.createElement('canvas')
+
+    if (elem.getContext && elem.getContext('2d')) {
+        // was able or not to get WebP representation
+        return elem.toDataURL('image/webp').startsWith('data:image/webp')
+    } else {
+        // very old browser like IE 8, canvas not supported
+        return false
+    }
+}
+
+/**
+ * Returns a new canvas with the image/canvas-content flipped vertically.
+ * Useful for putImageData(as it does not respect scale and translate) and WebGL textures, which are flipped vertically.
+ * @param canvas
+ */
+export function canvasFlipY(canvas: Exclude<CanvasImageSource,SVGImageElement>): HTMLCanvasElement {
+    const newCanvas = document.createElement('canvas')
+    newCanvas.width = canvas.width
+    newCanvas.height = canvas.height
+    const ctx = newCanvas.getContext('2d')
+    if (!ctx) throw new Error('Unable to get 2d context')
+    ctx.translate(0, canvas.height)
+    ctx.scale(1, -1)
+    ctx.drawImage(canvas, 0, 0)
+    return newCanvas
 }
