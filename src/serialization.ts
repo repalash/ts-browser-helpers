@@ -12,6 +12,13 @@ export interface Serializer{
     priority?: number // lower priority serializers are checked first
 }
 
+const objSerializer: Serializer = { // object
+    priority: Infinity,
+    serialize: (obj: any, meta?: any)=> Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, Serialization.Serialize(v, meta, false)])),
+    deserialize: (data: any, obj: any, meta: any)=>
+        Object.assign(obj||{}, Object.fromEntries(Object.entries(data).map(([k, v]) => [k, Serialization.Deserialize(v, obj?.[k], meta, false)]))),
+    isType: (obj: any) => (obj.constructor||Object) === Object,
+}
 /**
  * Serialization class with static methods for serializing and deserializing objects.
  * Properties and classes can be marked serializable by adding {@link serialize} and {@link serializable} decorators.
@@ -63,13 +70,7 @@ export class Serialization{
                 return data
             },
         },
-        { // object
-            priority: Infinity,
-            serialize: (obj: any, meta?: any)=> Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, Serialization.Serialize(v, meta, false)])),
-            deserialize: (data: any, obj: any, meta: any)=>
-                Object.assign(obj||{}, Object.fromEntries(Object.entries(data).map(([k, v]) => [k, Serialization.Deserialize(v, obj?.[k], meta, false)]))),
-            isType: (obj: any) => (obj.constructor||Object) === Object,
-        },
+        objSerializer,
     ]
 
     static GetSerializer(obj: any){
@@ -143,7 +144,7 @@ export class Serialization{
 
         // let isResource = false
         // If data is an embedded resource in meta
-        if(data && typeof data === 'object' && (data.contructor||Object) === Object && data.resource && typeof data.resource === 'string' && data.uuid){
+        if(data && typeof data === 'object' && (data.constructor||Object) === Object && data.resource && typeof data.resource === 'string' && data.uuid){
             const res = meta?.[data.resource]
             if(res) {
                 // isResource = true
@@ -154,7 +155,7 @@ export class Serialization{
                 if(!data) console.warn(`Resource ${data.resource} with uuid ${data.uuid} not found`)
                 if(obj === data) return obj // same object
                 if(data && typeof data === 'object' ) {
-                    const isDeserializedClass = (data.contructor||Object) !== Object // data is already deserialized
+                    const isDeserializedClass = (data.constructor||Object) !== Object // data is already deserialized
                     if(isDeserializedClass) {
                         if (!obj) {
                             return data
@@ -185,8 +186,8 @@ export class Serialization{
                 return obj
             }
         }
-        if(data && typeof data === 'object' && (data.contructor||Object) !== Object){
-            console.warn('Data might already be deserialized. It will be cloned, or copied to source', data, "source", obj, data.contructor, data.contructor !== Object)
+        if(data && typeof data === 'object' && (data.constructor||Object) !== Object && !Array.isArray(data)){
+            console.warn('Data might already be deserialized. It will be cloned, or copied to source', data, "source", obj, data.constructor, data.constructor !== Object)
         }
 
         // Create new object if not provided
@@ -200,8 +201,10 @@ export class Serialization{
                         obj = new constructor(data)
                     else obj = new constructor()
                 }
-            } else if ((data.constructor||Object) === Object) {
+            } else if ((data.constructor||Object) === Object && !obj) {
                 obj = {}
+            } else if (Array.isArray(data) && !obj) {
+                obj = []
             }
         }
         if (typeof obj === 'function') {
@@ -211,7 +214,7 @@ export class Serialization{
 
         if(!isThis) {
             const serializer = Serialization.GetSerializer(data)
-            if (serializer) return serializer.deserialize(data, obj, meta)
+            if (serializer && serializer !== objSerializer) return serializer.deserialize(data, obj, meta)
         }
 
         if (!data || obj === undefined || obj === null || typeof obj !== 'object') {
@@ -226,6 +229,8 @@ export class Serialization{
         }
 
         let type = obj.constructor ?? Object
+
+        if(type === Object) return objSerializer.deserialize(data, obj, meta)
 
         // Loop through all parent classes and deserialize properties with @serialize decorator
         while (type && type !== Object) {
