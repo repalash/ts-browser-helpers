@@ -21,7 +21,7 @@ export {imageToCanvas, imageBitmapToBase64, imageUrlToImageData, imageDataToCanv
 export {absMax, clearBit, updateBit} from './math'
 export {includesAll} from './misc'
 export {copyProps, getOrCall, getPropertyDescriptor, isPropertyWritable, safeSetProperty} from './obj-property'
-export {deepAccessObject, getKeyByValue, objectHasOwn} from './object'
+export {deepAccessObject, getKeyByValue, objectHasOwn, objectMap2, objectMap} from './object'
 export {makeColorSvg, makeTextSvg, makeColorSvgCircle, svgToCanvas, svgToPng} from './svg'
 export {timeout, now} from './time'
 export {pathJoin, getUrlQueryParam, setUrlQueryParam, remoteWorkerURL} from './url'

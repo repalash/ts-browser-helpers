@@ -1,5 +1,6 @@
 import {safeSetProperty} from './obj-property'
 import {findLastIndex} from './misc'
+import {objectMap2} from './object'
 
 /**
  * Serializer interface for primitive, array and struct/custom object types
@@ -14,9 +15,9 @@ export interface Serializer{
 
 const objSerializer: Serializer = { // object
     priority: Infinity,
-    serialize: (obj: any, meta?: any)=> Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, Serialization.Serialize(v, meta, false)])),
+    serialize: (obj: any, meta?: any)=> objectMap2(obj, ([k, v]) => [k, Serialization.Serialize(v, meta, false)]),
     deserialize: (data: any, obj: any, meta: any)=>
-        Object.assign(obj||{}, Object.fromEntries(Object.entries(data).map(([k, v]) => [k, Serialization.Deserialize(v, obj?.[k], meta, false)]))),
+        Object.assign(obj||{}, objectMap2(data, ([k, v]) => [k, Serialization.Deserialize(v, obj?.[k], meta, false)])),
     isType: (obj: any) => (obj.constructor||Object) === Object,
 }
 /**

@@ -38,8 +38,13 @@ export function onChange(
                     if (fnKey.name) {
                         let p: any = this as any
                         while (p) {
-                            if (p[fnKey.name] === fnKey) {
+                            const fn: AnyFunction = p[fnKey.name]
+                            if (fn === fnKey) {
                                 fnKey.call(this, ...params)
+                                called = true
+                                break
+                            }else if(fn && fn.name && fn.name.endsWith(`bound ${fnKey.name}`)){
+                                fn(...params)
                                 called = true
                                 break
                             }
@@ -47,7 +52,7 @@ export function onChange(
                         }
                     }
                     if (!called) {
-                        if (fnKey.name && this[fnKey.name].name === `bound ${fnKey.name}`) this[fnKey.name](...params)
+                        if (fnKey.name && this[fnKey.name].name.endsWith(`bound ${fnKey.name}`)) this[fnKey.name](...params)
                         else (<AnyFunction>fnKey)(...params as any)
                     }
                 }

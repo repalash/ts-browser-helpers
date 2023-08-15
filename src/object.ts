@@ -52,3 +52,30 @@ export function getKeyByValue(object: Record<string, any>, value: any): string|u
 export function objectHasOwn(o: object, v: PropertyKey): boolean {
     return Object.hasOwn ? Object.hasOwn(o, v) : o.hasOwnProperty(v)
 }
+
+/**
+ * Execute a function on each property of an object and return the result as a new object
+ * This allows in place modification of the object.
+ * To create a new object, set inPlace to false, or use {@link objectMap2} to modify the keys as well
+ * Similar to {@link Array.map} but for objects.
+ * @param obj - object
+ * @param fn - function to execute on each property
+ * @param inPlace - if true, the original object is modified. Default is true
+ */
+export function objectMap<T extends string|number|symbol, V>(obj: Record<T, V>, fn: (val: V, key: T)=>V, inPlace = true): Record<T, V> {
+    const result: any = inPlace ? obj : {}
+    const keys = Object.keys(obj) as T[]
+    for (const key of keys) result[key] = fn(obj[key], key)
+    return result
+}
+
+/**
+ * Shorthand for `Object.fromEntries(Object.entries(obj).map(fn))`
+ * Similar to {@link objectMap} but uses {@link Object.fromEntries} to create the new object, so keys can also be changed.
+ * @param obj
+ * @param fn
+ */
+export function objectMap2<T extends string|number|symbol, V = any>(obj: Record<T, V>, fn: ([key, val]: [T, V])=>[T, V]): Record<T, V> {
+    return Object.fromEntries((Object.entries(obj) as [T, V][]).map((v: [T, V])=>fn(v))) as Record<T, V>
+}
+
