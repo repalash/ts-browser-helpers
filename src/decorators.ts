@@ -7,19 +7,19 @@ import {Serialization} from './serialization'
  * @note - Does not work with "target": "esnext" in tsconfig.json
  * @note - Requires "experimentalDecorators": true in tsconfig.json
  * @todo add example.
- * @param fnKey - use: `<MyClass>.prototype.<myFunction>` or define an arrow function: `(key, value, oldValue) => {}`.
+ * @param fnKey - use: `<MyClass>.prototype.<myFunction>` or define an arrow function: `(key, value, oldValue, target) => {}`.
  * @param paramType -
- * if param, the function is called with 3 parameters: `key, value, oldValue`, default for {@link onChange}
- * if object, the function is called with an object parameter: `{key, value, oldValue}`, default for {@link onChange3}
+ * if param, the function is called with 4 parameters: `key, value, oldValue, target`, default for {@link onChange}
+ * if object, the function is called with an object parameter: `{key, value, oldValue, target}`, default for {@link onChange3}
  * if void then no params are passed. {@link onChange2}
  * Default: false.
  *
  * @category Decorators
  */
-export function onChange(
+export function onChange<TTarget = any>(
     fnKey: string |
-        ((key: string, value: any, oldValue: any)=>void)
-        //| ((obj:{key: string, value: any, oldValue: any})=>void)
+        ((key: string, value: any, oldValue: any, target: TTarget)=>void) // target is this
+        //| ((obj:{key: string, value: any, oldValue: any, target: TTarget})=>void)
     , paramType: 'param'|'object'|'void' = 'param'): PropertyDecorator {
     if (!fnKey) throw new Error('onChange: fnKey is undefined, make sure the function exists or provide a string')
     return (targetPrototype: any, propertyKey: string|symbol) => {
@@ -31,13 +31,13 @@ export function onChange(
                 const oldVal = this[`_oc_${propertyKey as string}`]
                 if (oldVal === newVal) return
                 this[`_oc_${propertyKey as string}`] = newVal
-                const params = paramType === 'param' ? [propertyKey, newVal, oldVal] : paramType === 'object' ? [{key: propertyKey, value: newVal, oldValue: oldVal}] : ''
+                const params = paramType === 'param' ? [propertyKey, newVal, oldVal, this] : paramType === 'object' ? [{key: propertyKey, value: newVal, oldValue: oldVal, target: this}] : ''
                 if (typeof fnKey === 'string') this[fnKey]?.call(this, ...params)
                 else if (typeof fnKey === 'function') {
                     let called = false // to get functions in the prototype chain
                     if (fnKey.name) {
                         let p: any = this as any
-                        while (p) {
+                        while (p) { // todo: memoize?
                             const fn: AnyFunction = p[fnKey.name]
                             if (fn === fnKey) {
                                 fnKey.call(this, ...params)
@@ -74,15 +74,27 @@ export function onChange2(
 }
 
 /**
- * Similar to {@link onChange}, but accepts any function and paramType defaults to 'object'. The function is called with an object parameter: `{key, value, oldValue}`.
+ * Similar to {@link onChange}, but accepts any function and paramType defaults to 'object'. The function is called with an object parameter: `{key, value, oldValue, target}`.
  * @param fnKey
  * @param paramType
  */
-export function onChange3(
-    fnKey: string|((obj:{key: string, value: any, oldValue: any})=>void),
+export function onChange3<TTarget = any>(
+    fnKey: string|((obj:{key: string, value: any, oldValue: any, target: TTarget})=>void),
     paramType: 'object'|'void' = 'object'): PropertyDecorator {
     if (!fnKey) throw new Error('onChange: fnKey is undefined, make sure the function exists or provide a string')
-    return onChange(fnKey as any, paramType)
+    return onChange<TTarget>(fnKey as any, paramType)
+}
+
+/**
+ * Similar to onChange but dispatches an event instead of calling a function.
+ * Requires `dispatchEvent` to be defined on the target.
+ * @param eventName - The name of the event to dispatch. Default: '`key`-changed'
+ */
+export function onChangeDispatchEvent(eventName?: string): PropertyDecorator {
+    return onChange((key, value, oldValue, target) => {
+        if(!target.dispatchEvent) throw new Error('onChangeDispatchEvent: target does not have dispatchEvent')
+        target.dispatchEvent({type: eventName || `${key}-changed`, detail: {key, value, oldValue}})
+    }, 'param')
 }
 
 /**

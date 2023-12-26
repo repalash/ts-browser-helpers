@@ -1,3 +1,5 @@
+import {AnyFunction} from './types'
+
 /**
  * Returns true if the array includes all the elements of the sub array
  * @param arr
@@ -20,4 +22,22 @@ export function findLastIndex<T>(arr: T[], predicate: (v: T)=>boolean){
         if (predicate(arr[i])) return i
     }
     return -1
+}
+
+/**
+ * Call f1 before calling f2
+ * Sample usage
+ * ```
+ * const logRender = ()=>console.log('render')
+ * obj.render = wrapThisFunction(logRender, obj.beforeRender)
+ * // now calling obj.beforeRender(), will log 'render' and then call obj.beforeRender()
+ * ```
+ * @param f1
+ * @param f2
+ */
+export function wrapThisFunction<T extends AnyFunction, T2>(f1: ()=>void, f2?: T): T {
+    return function(this: T2, ...args: Parameters<T>) {
+        f1()
+        return f2 && f2.call(this, ...args)
+    } as T
 }
