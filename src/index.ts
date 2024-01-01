@@ -17,7 +17,7 @@ export {onChange, onChange2, onChange3, onChangeDispatchEvent, serialize, serial
 export {aesGcmDecrypt, aesGcmEncrypt} from './encryption'
 export {verifyPermission, writeFile, getFileHandle, getNewFileHandle, readFile} from './fs-api'
 export {embedUrlRefs, htmlToCanvas, htmlToPng, htmlToSvg} from './htmlToImage'
-export {imageToCanvas, imageBitmapToBase64, imageUrlToImageData, imageDataToCanvas, canvasFlipY, isWebpExportSupported} from './image'
+export {imageToCanvas, imageBitmapToBase64, imageUrlToImageData, imageDataToCanvas, canvasFlipY, isWebpExportSupported, imageBitmapToBlob, imageBitmapToCanvas, blobToImage} from './image'
 export {absMax, clearBit, updateBit} from './math'
 export {includesAll, wrapThisFunction, findLastIndex} from './misc'
 export {copyProps, getOrCall, getPropertyDescriptor, isPropertyWritable, safeSetProperty} from './obj-property'

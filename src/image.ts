@@ -1,15 +1,15 @@
 /**
- * Convert an image {@link ImageBitmap} or {@link CanvasImageSource} to a base64 data url.
+ * Convert an image {@link ImageBitmap} or {@link CanvasImageSource} to a new canvas with a max width. Good for resizing images keeping the aspect ratio and generating previews.
  * @param bitmap - image to convert
  * @param maxWidth - maximum width of the image (default: 8192). Images larger than this will be scaled down. This is because strings can get too long.
  * @param detachBitmap - detach the bitmap after conversion (default: false). This will free up bitmap memory if you don't need it anymore.
  *
- * See also {@link imageUrlToImageData}
+ * See also {@link imageUrlToImageData}, {@link imageBitmapToBase64}, {@link imageBitmapToBlob}
  *
  * @category Images
  */
-export function imageBitmapToBase64(bitmap: ImageBitmap | CanvasImageSource, maxWidth = 8192, detachBitmap = false): string {
-    if (!bitmap.width || !bitmap.height) return ''
+export function imageBitmapToCanvas(bitmap: ImageBitmap | CanvasImageSource, maxWidth = 8192, detachBitmap = false): HTMLCanvasElement {
+    if (!bitmap.width || !bitmap.height) throw new Error('Invalid bitmap')
 
     // create a canvas
     const canvas = document.createElement('canvas')
@@ -28,13 +28,66 @@ export function imageBitmapToBase64(bitmap: ImageBitmap | CanvasImageSource, max
         // twice in memory...
         canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
     }
-    // get it back as a Blob
-    const url = canvas.toDataURL('image/png')
-    canvas.remove()
     if (isBitmap && detachBitmap) {
         bitmap.close()
     }
+    return canvas
+}
+
+/**
+ * Convert an image {@link ImageBitmap} or {@link CanvasImageSource} to a base64 data url.
+ * @param bitmap - image to convert
+ * @param maxWidth - maximum width of the image (default: 8192). Images larger than this will be scaled down. This is because strings can get too long.
+ * @param detachBitmap - detach the bitmap after conversion (default: false). This will free up bitmap memory if you don't need it anymore.
+ * @param type - mime type of the data url (default: 'image/png')
+ *
+ * See also {@link imageUrlToImageData}, {@link imageBitmapToCanvas}, {@link imageBitmapToBlob}
+ *
+ * @category Images
+ */
+export function imageBitmapToBase64(bitmap: ImageBitmap | CanvasImageSource, maxWidth = 8192, detachBitmap = false, type = 'image/png'): string {
+    if (!bitmap.width || !bitmap.height) return ''
+
+    // create a canvas
+    const canvas = imageBitmapToCanvas(bitmap, maxWidth, false)
+    // get it back as a Blob
+    const url = canvas.toDataURL(type)
+    canvas.remove()
+    if (detachBitmap && bitmap instanceof ImageBitmap) {
+        bitmap.close()
+    }
     return url
+
+}
+
+
+/**
+ * Convert an image {@link ImageBitmap} or {@link CanvasImageSource} to a blob.
+ * @param bitmap - image to convert
+ * @param maxWidth - maximum width of the image (default: 8192). Images larger than this will be scaled down. This is because strings can get too long.
+ * @param detachBitmap - detach the bitmap after conversion (default: false). This will free up bitmap memory if you don't need it anymore.
+ * @param type - mime type of the blob (default: 'image/png')
+ *
+ * See also {@link imageUrlToImageData}, {@link imageBitmapToCanvas}, {@link imageBitmapToBase64}
+ *
+ * @category Images
+ */
+export async function imageBitmapToBlob(bitmap: ImageBitmap | CanvasImageSource, maxWidth = 8192, detachBitmap = false, type = 'image/png'): Promise<Blob> {
+    if (!bitmap.width || !bitmap.height) return Promise.reject('Invalid bitmap')
+
+    // create a canvas
+    const canvas = imageBitmapToCanvas(bitmap, maxWidth, false)
+    // get it back as a Blob
+    return new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) => {
+            if (!blob) reject('Could not get blob')
+            else resolve(blob)
+            canvas.remove()
+            if (detachBitmap && bitmap instanceof ImageBitmap) {
+                bitmap.close()
+            }
+        }, type)
+    })
 }
 
 /**
@@ -171,4 +224,24 @@ export function canvasFlipY(canvas: Exclude<CanvasImageSource,SVGImageElement>):
     ctx.scale(1, -1)
     ctx.drawImage(canvas, 0, 0)
     return newCanvas
+}
+
+/**
+ * Load a Blob or a file containing an image and return an HTMLImageElement.
+ * @param blob
+ */
+export function blobToImage(blob: Blob){
+    return new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image()
+        const url = URL.createObjectURL(blob)
+        img.onload = () => {
+            URL.revokeObjectURL(url)
+            resolve(img)
+        }
+        img.onerror = (e)=>{
+            URL.revokeObjectURL(url)
+            reject(e)
+        }
+        img.src = url
+    })
 }
