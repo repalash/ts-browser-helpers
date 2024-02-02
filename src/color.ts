@@ -22,7 +22,7 @@ export function LinearToSRGB( c: number): number {
  * @param color - color string (css compatible color)
  * @param width - width of the image (default: 1)
  * @param height - height of the image (default: 1)
- * @return {string} - data url
+ * @return data url
  */
 export function colorToDataUrl(color: string, width = 1, height = 1){
     const canvas = document.createElement('canvas')

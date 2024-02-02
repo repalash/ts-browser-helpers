@@ -21,7 +21,7 @@
  *
  * @return {!Promise<FileSystemFileHandle>} Handle to the existing file.
  */
-export function getFileHandle(): Promise<FileSystemFileHandle> {
+export async function getFileHandle(): Promise<FileSystemFileHandle> {
     // For Chrome 86 and later...
     if ('showOpenFilePicker' in window) {
         return window.showOpenFilePicker().then((handles) => handles[0]);
@@ -84,7 +84,7 @@ function _readFileLegacy(file: File): Promise<string> {
     return new Promise((resolve) => {
         const reader = new FileReader();
         reader.addEventListener('loadend', (e) => {
-            const text = (e.srcElement as any).result;
+            const text = (e.srcElement as any || e.target).result;
             resolve(text);
         });
         reader.readAsText(file);
@@ -121,9 +121,9 @@ export async function writeFile(fileHandle: FileSystemFileHandle, contents: File
  * Verify the user has granted permission to read or write to the file, if
  * permission hasn't been granted, request permission.
  *
- * @param {FileSystemFileHandle} fileHandle File handle to check.
- * @param {boolean} withWrite True if write permission should be checked.
- * @return {boolean} True if the user has granted read/write permission.
+ * @param fileHandle File handle to check.
+ * @param withWrite True if write permission should be checked.
+ * @return True if the user has granted read/write permission.
  */
 export async function verifyPermission(fileHandle: FileSystemFileHandle, withWrite: boolean) {
     const opts: any = {}

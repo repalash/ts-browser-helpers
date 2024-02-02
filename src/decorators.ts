@@ -121,6 +121,7 @@ export function serialize(key?: string): PropertyDecorator {
 export function serializable(id: string) {
     return <T extends new (...args: any[]) => any>(constructor: T) =>{
         constructor = class extends constructor {
+            // noinspection JSUnusedGlobalSymbols
             readonly serializableClassId = id
             // static DataInConstructor = false // if constructor is equivalent to fromJSON, see LUTCubeTextureWrapper.
         }
