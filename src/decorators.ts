@@ -1,5 +1,6 @@
 import {AnyFunction} from "./types";
 import {Serialization} from './serialization'
+import {objectHasOwn} from './object'
 
 /**
  * Decorator that redefines a property with getter and setter, and calls a function when the property is changed.
@@ -22,8 +23,8 @@ export function onChange<TTarget = any>(
         //| ((obj:{key: string, value: any, oldValue: any, target: TTarget})=>void)
     , paramType: 'param'|'object'|'void' = 'param'): PropertyDecorator {
     if (!fnKey) throw new Error('onChange: fnKey is undefined, make sure the function exists or provide a string')
-    return (targetPrototype: any, propertyKey: string|symbol) => {
-        Object.defineProperty(targetPrototype, propertyKey, {
+    return (targetPrototype: any, propertyKey: string|symbol, descriptor?: TypedPropertyDescriptor<any>) => {
+        const prop = {
             get() {
                 return this[`_oc_${propertyKey as string}`]
             },
@@ -57,7 +58,15 @@ export function onChange<TTarget = any>(
                     }
                 }
             },
-        })
+        } as any
+        // babel(in react-scripts) - https://github.com/babel/babel/blob/909ed3473968c2ccd75f89e17c37ef4771cc3ff8/packages/babel-helpers/src/helpers/applyDecoratedDescriptor.ts#L11
+        if (descriptor) {
+            if (objectHasOwn(descriptor, 'value')) delete descriptor.value
+            if (objectHasOwn(descriptor, 'writable')) delete descriptor.writable
+            if (objectHasOwn(descriptor, 'initializer')) delete (descriptor as any).initializer
+            return Object.assign(descriptor, prop)
+        }
+        Object.defineProperty(targetPrototype, propertyKey, prop)
     }
 }
 

@@ -99,7 +99,7 @@ export class Serialization{
      * Serialize an object
      * @param obj - object to serialize
      * @param meta - Optional object to store common meta-data/resources across the serialization process of multiple objects
-     @param isThis - true if called from inside the serialization function, like custom {@link IJSONSerializable.toJSON}.
+     * @param isThis - true if called from inside the serialization function, like custom {@link IJSONSerializable.toJSON}.
      */
     static Serialize(obj: any, meta?: Record<string, Record<string, any>>, isThis = false){
         if (typeof obj === 'function') return undefined
@@ -187,9 +187,13 @@ export class Serialization{
                 return obj
             }
         }
-        if(data && typeof data === 'object' && (data.constructor||Object) !== Object && !Array.isArray(data)){
+        if(data && typeof data === 'object' && (data.constructor||Object) !== Object && !Array.isArray(data) && !data.serializableClassId){
+            if(data instanceof Blob) return data // todo special check for Blob/File
+
             console.warn('Data might already be deserialized. It will be cloned, or copied to source', data, "source", obj, data.constructor, data.constructor !== Object)
         }
+
+        // todo handle File/Blob and FS API descriptors (try loading SheenChair.glb from three,js in threepipe)
 
         // Create new object if not provided
         if (data && typeof data === 'object') {
@@ -209,7 +213,7 @@ export class Serialization{
             }
         }
         if (typeof obj === 'function') {
-            console.error('cannot deserialize over function', obj, data)
+            console.error('cannot deserialize a function', obj, data)
             return obj // throw error maybe?}
         }
 
