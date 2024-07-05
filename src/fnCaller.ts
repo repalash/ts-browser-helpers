@@ -2,11 +2,13 @@ import {AnyFunction} from './types'
 
 /**
  * calls fn.call(obj) or fn() appropriately
+ *
+ * @category JS Object
  */
 export class FnCaller {
     private static methodMap = new WeakMap<object, WeakMap<Function, boolean>>();
 
-    static callFunction(fn: AnyFunction, obj?: any, params: any[] = []) {
+    static callFunction(fn: AnyFunction, obj?: Record<string|symbol, any>, params: any[] = []) {
         if (!obj) return fn(...params)
         if (fn.name && obj[fn.name] === fn) return fn.call(obj, ...params)
         // all this is required because of minification, there fn.name is mangled.
@@ -16,11 +18,9 @@ export class FnCaller {
             let p = obj
             while(p){
                 for(let desc of Object.getOwnPropertyNames(p)){
-                    const v = Object.getOwnPropertyDescriptor(p, desc)
-                    if (v && v.value === fn){
-                        methods.set(fn, true);
-                        return fn.call(obj, ...params);
-                    }
+                    if (p[desc] !== fn) continue
+                    methods.set(fn, true);
+                    return fn.call(obj, ...params);
                 }
                 p = Object.getPrototypeOf(p);
             }
