@@ -1,6 +1,6 @@
 {
   "name": "ts-browser-helpers",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "A collection of utility classes, functions and decorators for javascript/typescript projects, for use in the browser.",
   "main": "src/index.ts",
   "module": "dist/bundle.esm.js",

@@ -1,6 +1,7 @@
 import {AnyFunction} from "./types";
 import {Serialization} from './serialization'
 import {objectHasOwn} from './object'
+import {FnCaller} from './fnCaller'
 
 /**
  * Decorator that redefines a property with getter and setter, and calls a function when the property is changed.
@@ -32,31 +33,9 @@ export function onChange<TTarget = any>(
                 const oldVal = this[`_oc_${propertyKey as string}`]
                 if (oldVal === newVal) return
                 this[`_oc_${propertyKey as string}`] = newVal
-                const params = paramType === 'param' ? [propertyKey, newVal, oldVal, this] : paramType === 'object' ? [{key: propertyKey, value: newVal, oldValue: oldVal, target: this}] : ''
+                const params = paramType === 'param' ? [propertyKey, newVal, oldVal, this] : paramType === 'object' ? [{key: propertyKey, value: newVal, oldValue: oldVal, target: this}] : []
                 if (typeof fnKey === 'string') this[fnKey]?.call(this, ...params)
-                else if (typeof fnKey === 'function') {
-                    let called = false // to get functions in the prototype chain
-                    if (fnKey.name) {
-                        let p: any = this as any
-                        while (p) { // todo: memoize?
-                            const fn: AnyFunction = p[fnKey.name]
-                            if (fn === fnKey) {
-                                fnKey.call(this, ...params)
-                                called = true
-                                break
-                            }else if(fn && fn.name && fn.name.endsWith(`bound ${fnKey.name}`)){
-                                fn(...params)
-                                called = true
-                                break
-                            }
-                            p = Object.getPrototypeOf(p)
-                        }
-                    }
-                    if (!called) {
-                        if (fnKey.name && this[fnKey.name].name.endsWith(`bound ${fnKey.name}`)) this[fnKey.name](...params)
-                        else (<AnyFunction>fnKey)(...params as any)
-                    }
-                }
+                else if (typeof fnKey === 'function') FnCaller.callFunction(fnKey, this, params)
             },
         } as any
         // babel(in react-scripts) - https://github.com/babel/babel/blob/909ed3473968c2ccd75f89e17c37ef4771cc3ff8/packages/babel-helpers/src/helpers/applyDecoratedDescriptor.ts#L11
