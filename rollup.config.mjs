@@ -6,7 +6,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import terser from '@rollup/plugin-terser';
 import license from 'rollup-plugin-license'
-import packageJson from './package.json' assert { type: 'json' };
+import packageJson from './package.json' with { type: 'json' };
 import path from 'path'
 import { fileURLToPath } from 'url';
 
@@ -14,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const { name, version, author } = packageJson
-const { main, module, browser } = packageJson["clean-package"].replace
+const { main, module, browser } = packageJson
 const isProduction = process.env.NODE_ENV === 'production'
 
 const settings = {

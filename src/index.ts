@@ -4,8 +4,9 @@ export type {AnyFunction, AnyOptions, Class, IDisposable, IJSONSerializable, Par
 export type {Serializer} from './serialization'
 
 export {PointerDragHelper} from './PointerDragHelper'
+export {JSUndoManager} from './JSUndoManager'
 export {Damper} from './damper'
-export {SimpleEventDispatcher, } from './EventDispatcher'
+export {SimpleEventDispatcher} from './EventDispatcher'
 
 export {createCanvasElement, createDiv, createImage, createStyles, createScriptFromURL, cloneScriptTag, setInnerHTMLWithScripts} from './dom'
 export {TYPED_ARRAYS, arrayBufferToBase64, base64ToArrayBuffer, getTypedArray} from './arrayBuffer'

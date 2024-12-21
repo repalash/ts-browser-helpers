@@ -1,10 +1,11 @@
 {
   "name": "ts-browser-helpers",
-  "version": "0.14.2",
+  "version": "0.15.0",
   "description": "A collection of utility classes, functions and decorators for javascript/typescript projects, for use in the browser.",
-  "main": "src/index.ts",
+  "main": "dist/bundle.min.js",
   "module": "dist/bundle.esm.js",
-  "types": "src/index.ts",
+  "browser": "dist/bundle.umd.js",
+  "types": "dist/index.d.ts",
   "sources": "src/index.ts",
   "sideEffects": false,
   "scripts": {
@@ -22,13 +23,7 @@
       "scripts",
       "devDependencies",
       "optionalDependencies"
-    ],
-    "replace": {
-      "main": "dist/bundle.min.js",
-      "module": "dist/bundle.esm.js",
-      "browser": "dist/bundle.umd.js",
-      "types": "dist/index.d.ts"
-    }
+    ]
   },
   "files": [
     "dist",
@@ -82,5 +77,8 @@
   },
   "browserslist": [
     "defaults"
-  ]
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  }
 }
