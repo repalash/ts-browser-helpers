@@ -16,14 +16,16 @@
 export function deepAccessObject(access: string | string[], tar: any, throwOnInvalid = false): any {
     if (typeof access === 'string') access = access.split('.')
     while (access.length > 0) {
-        if (!tar) return
+        if (!tar) return tar
         const p = access.splice(0, 1)[0] as string
         if (p.length < 1) continue
-        if (p in tar) {
+        if (Array.isArray(tar)) {
+            tar = tar[parseInt(p)]
+        }else if (typeof tar==='object' && p in tar) {
             tar = tar[p]
         } else {
             // console.error('invalid access, check', p, tar)
-            if(throwOnInvalid)
+            if (throwOnInvalid)
                 throw new Error('invalid access, check ' + p + ' in ' + tar)
             else return undefined
             // return tar
