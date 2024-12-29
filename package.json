@@ -1,21 +1,27 @@
 {
   "name": "ts-browser-helpers",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "description": "A collection of utility classes, functions and decorators for javascript/typescript projects, for use in the browser.",
-  "main": "dist/bundle.min.js",
+  "main": "dist/bundle.esm.js",
   "module": "dist/bundle.esm.js",
   "browser": "dist/bundle.umd.js",
   "types": "dist/index.d.ts",
   "sources": "src/index.ts",
   "sideEffects": false,
+  "type": "module",
   "scripts": {
-    "new:pack": "npm run prepare && clean-package && npm pack && clean-package restore",
-    "new:publish": "npm run prepare && clean-package && npm publish && clean-package restore",
-    "build": "rimraf dist && NODE_ENV=production rollup -c",
-    "dev": "rollup -c -w",
+    "build": "rimraf dist ; vite build",
+    "dev": "NODE_ENV=development vite build --watch",
     "serve-docs": "ws -d docs -p 8080",
+    "test": "npm run check",
+
     "docs": "rimraf docs ; npx typedoc --readme none ./src/index.ts",
-    "prepare": "npm run build && npm run docs"
+    "prepare": "npm run build && npm run docs",
+    "prepublishOnly": "npm run test",
+    "check": "tsc -p tsconfig.json --noEmit",
+
+    "new:pack": "npm run prepare && clean-package && npm pack && clean-package restore",
+    "new:publish": "git diff --exit-code --name-only HEAD * && npm run prepare && clean-package && npm publish && clean-package restore && git tag v$npm_package_version"
   },
   "clean-package": {
     "remove": [
@@ -54,19 +60,17 @@
   },
   "homepage": "https://github.com/repalash/ts-browser-helpers#readme",
   "devDependencies": {
-    "rimraf": "^5.0.1",
-    "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-json": "^5.0.1",
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "@rollup/plugin-terser": "^0.1.0",
-    "@rollup/plugin-typescript": "^9.0.2",
     "clean-package": "^2.2.0",
-    "local-web-server": "^5.2.1",
-    "rollup": "^3.4.0",
     "rollup-plugin-license": "^3.0.1",
-    "tslib": "^2.4.1",
-    "typedoc": "^0.24.7",
-    "typescript": "^4.9.3",
+    "typedoc": "^0.27.5",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5",
+    "tslib": "^2.8.1",
+    "local-web-server": "^5.4.0",
+    "vite-plugin-dts": "^4.4.0",
+    "rimraf": "^6.0.1",
+    "@rollup/plugin-replace": "^6.0.2",
     "typedoc-plugin-markdown": "^3.15.3"
   },
   "dependencies": {

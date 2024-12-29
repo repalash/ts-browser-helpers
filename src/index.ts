@@ -5,6 +5,7 @@ export type {Serializer} from './serialization'
 
 export {PointerDragHelper} from './PointerDragHelper'
 export {JSUndoManager} from './JSUndoManager'
+export type {JSUndoManagerCommand2, JSUndoManagerCommand, JSUndoManagerOptions, JSUndoManagerCommand1} from './JSUndoManager'
 export {Damper} from './damper'
 export {SimpleEventDispatcher} from './EventDispatcher'
 

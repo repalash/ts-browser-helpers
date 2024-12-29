@@ -8,7 +8,7 @@
  *
  * @category Images
  */
-export function imageBitmapToCanvas(bitmap: ImageBitmap | CanvasImageSource, maxWidth = 8192, detachBitmap = false): HTMLCanvasElement {
+export function imageBitmapToCanvas(bitmap: ImageBitmap | CanvasImageSource | any, maxWidth = 8192, detachBitmap = false): HTMLCanvasElement {
     if (!bitmap.width || !bitmap.height) throw new Error('Invalid bitmap')
 
     // create a canvas
@@ -45,7 +45,8 @@ export function imageBitmapToCanvas(bitmap: ImageBitmap | CanvasImageSource, max
  *
  * @category Images
  */
-export function imageBitmapToBase64(bitmap: ImageBitmap | CanvasImageSource, maxWidth = 8192, detachBitmap = false, type = 'image/png'): string {
+// export function imageBitmapToBase64(bitmap: ImageBitmap | CanvasImageSource, maxWidth = 8192, detachBitmap = false, type = 'image/png'): string {
+export function imageBitmapToBase64(bitmap: ImageBitmap | Exclude<CanvasImageSource,VideoFrame>, maxWidth = 8192, detachBitmap = false, type = 'image/png'): string {
     if (!bitmap.width || !bitmap.height) return ''
 
     // create a canvas
@@ -72,7 +73,8 @@ export function imageBitmapToBase64(bitmap: ImageBitmap | CanvasImageSource, max
  *
  * @category Images
  */
-export async function imageBitmapToBlob(bitmap: ImageBitmap | CanvasImageSource, maxWidth = 8192, detachBitmap = false, type = 'image/png'): Promise<Blob> {
+// export async function imageBitmapToBlob(bitmap: ImageBitmap | CanvasImageSource, maxWidth = 8192, detachBitmap = false, type = 'image/png'): Promise<Blob> {
+export async function imageBitmapToBlob(bitmap: ImageBitmap | Exclude<CanvasImageSource,VideoFrame>, maxWidth = 8192, detachBitmap = false, type = 'image/png'): Promise<Blob> {
     if (!bitmap.width || !bitmap.height) return Promise.reject('Invalid bitmap')
 
     // create a canvas
@@ -214,7 +216,8 @@ export function isWebpExportSupported() {
  * Useful for putImageData(as it does not respect scale and translate) and WebGL textures, which are flipped vertically.
  * @param canvas
  */
-export function canvasFlipY(canvas: Exclude<CanvasImageSource,SVGImageElement>): HTMLCanvasElement {
+// export function canvasFlipY(canvas: Exclude<CanvasImageSource,SVGImageElement>): HTMLCanvasElement {
+export function canvasFlipY(canvas: Exclude<CanvasImageSource,SVGImageElement|VideoFrame>): HTMLCanvasElement {
     const newCanvas = document.createElement('canvas')
     newCanvas.width = canvas.width
     newCanvas.height = canvas.height

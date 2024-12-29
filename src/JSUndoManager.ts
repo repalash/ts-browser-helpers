@@ -9,7 +9,7 @@
  * @license MIT - https://opensource.org/licenses/MIT
  *
  * Changes -
- * 1. Added predefined commands
+ * 1. Added presets commands
  * 2. Port to TypeScript
  * 3. Remove transactions
  */
@@ -20,6 +20,7 @@ export interface JSUndoManagerOptions{
     limit: number;
     debug: boolean;
     bindHotKeys: boolean;
+    hotKeyRoot?: HTMLElement;
     // useTransactions: boolean;
 }
 export type JSUndoManagerCommand1 = {
@@ -28,7 +29,7 @@ export type JSUndoManagerCommand1 = {
 }
 export type JSUndoManagerCommand2 = {
     type: string,
-    data: any
+    // [key: string]: any
 }
 export type JSUndoManagerCommand = JSUndoManagerCommand1 | JSUndoManagerCommand2
 
@@ -44,10 +45,11 @@ export class JSUndoManager {
         bindHotKeys: false,     // whether to bind "undo" and "redo" commands to "Ctrl+Z", "Ctrl+Y" & "Ctrl+Shift+Z" hot keys
         // useTransactions: true   // whether to initialize transactions manager
     }
+    enabled = true;
     stack: JSUndoManagerCommand[];
     sp: number;
     // transaction: TransactionManager;
-    predefined: Record<string, (data: any)=>JSUndoManagerCommand1> = {}
+    presets: Record<string, (c: JSUndoManagerCommand2)=>JSUndoManagerCommand1> = {}
 
     constructor(options: JSUndoManagerOptions) {
         Object.assign(this.options, options);
@@ -75,16 +77,26 @@ export class JSUndoManager {
     bindHotKeys() {
         this.log("Bound 'undo' and 'redo' actions to 'Ctrl/Cmd+Z', 'Ctrl+Y' & 'Ctrl/Cmd+Shift+Z' hot keys");
 
-        document.addEventListener("keydown", (e) => {
-            const ctrlKey = e.ctrlKey || e.metaKey;
-            if (e.code === 'KeyZ' && ctrlKey && !e.shiftKey) {
-                this.undo();
-            } else if ((e.code === 'KeyZ' && ctrlKey && e.shiftKey) || (e.code === 'KeyY' && e.ctrlKey)) {
-                this.redo();
-            }
-        });
+        const elem = this.options.hotKeyRoot??document
+        elem.addEventListener("keydown", this._keyDown);
 
         return this;
+    }
+
+    dispose() {
+        const elem = this.options.hotKeyRoot??document
+        elem.removeEventListener("keydown", this._keyDown);
+        return this.reset()
+    }
+
+    private _keyDown = (e: KeyboardEvent) => {
+        if(!this.enabled) return
+        const ctrlKey = e.ctrlKey || e.metaKey;
+        if (e.code === 'KeyZ' && ctrlKey && !e.shiftKey) {
+            this.undo();
+        } else if ((e.code === 'KeyZ' && ctrlKey && e.shiftKey) || (e.code === 'KeyY' && e.ctrlKey)) {
+            this.redo();
+        }
     }
 
     /**
@@ -93,46 +105,57 @@ export class JSUndoManager {
      * @returns {JSUndoManager}
      */
     record(command: JSUndoManagerCommand): this {
+        if(!this.enabled) return this
         this._record(command);
         return this;
     }
-    recordP(type: string, data: any): this {
-        this._record({type, data});
-        return this;
+
+    replaceLast(command: JSUndoManagerCommand) {
+        const last = this.peek()
+        if(!last) return
+
+        this.log('replace', last, 'with', command)
+
+        this.stack[this.sp] = command
+
+        return this
     }
 
     /**
      * Execute function and record it with its opposite "undo" function
-     * @param {Object|Function} command1 - either an object with "redo" and "undo" functions
+     * @param {Object|Function} command - either an object with "redo" and "undo" functions
      * @param {Function} [undo] - "undo" function, used if the first argument is also a function
      * @returns {JSUndoManager}
      */
-    execute(command1: JSUndoManagerCommand) {
-        let command = this._rc(command1);
-        let doFunction = command.redo;
+    execute(command: JSUndoManagerCommand) {
+        if(!this.enabled) return
 
-        this.record.apply(this, command);
+        let command1 = this._rc(command);
+        let doFunction = command1.redo;
+
+        this.record.apply(this, command1);
 
         this.log("Executing function...");
-        doFunction();
+        doFunction.apply(command);
 
         return this;
     }
 
-    _rc(command1: JSUndoManagerCommand1 | JSUndoManagerCommand2) {
-        if ((command1 as JSUndoManagerCommand2).type) {
-            const p = this.predefined[(command1 as JSUndoManagerCommand2).type]
+    _rc(command: JSUndoManagerCommand1 | JSUndoManagerCommand2) {
+        if ((command as JSUndoManagerCommand2).type) {
+            const p = this.presets[(command as JSUndoManagerCommand2).type]
             if (typeof p === 'function') {
-                return p((command1 as JSUndoManagerCommand2).data)
+                return p((command as JSUndoManagerCommand2))
             } else {
-                console.error(command1, p, this.predefined)
+                console.error(command, p, this.presets)
                 throw new Error(`Predefined command not found`)
             }
         } else
-            return command1 as JSUndoManagerCommand1
+            return command as JSUndoManagerCommand1
     }
 
     _record(command: JSUndoManagerCommand) {
+        if(!this.enabled) return
         // if (this.transaction.isInProgress())
         //     return this.transaction._record(command);
 
@@ -177,13 +200,13 @@ export class JSUndoManager {
         if (!this.canUndo())
             return this;
 
-        let command1 = this.stack[this.sp];
+        let command = this.stack[this.sp];
 
         this.log("undo");
 
         this.sp--;
 
-        this._rc(command1).undo();
+        this._rc(command).undo();
 
         return this;
     }
@@ -193,7 +216,14 @@ export class JSUndoManager {
      * @returns {boolean}
      */
     canUndo() {
-        return this.sp >= 0;
+        return this.sp >= 0 && this.enabled;
+    }
+
+    /**
+     * Get the last command that was done
+     */
+    peek() {
+        return this.canUndo() ? this.stack[this.sp] : null
     }
 
     /**
@@ -204,13 +234,13 @@ export class JSUndoManager {
         if (!this.canRedo())
             return this;
 
-        let command1 = this.stack[this.sp + 1]; //execute next command after stack pointer
+        let command = this.stack[this.sp + 1]; //execute next command after stack pointer
 
         this.log("redo");
 
         this.sp++;
 
-        this._rc(command1).redo();
+        this._rc(command).redo();
 
         return this;
     }
@@ -220,7 +250,14 @@ export class JSUndoManager {
      * @returns {boolean}
      */
     canRedo() {
-        return this.sp < this.stack.length - 1; //if stack pointer is not at the end
+        return this.sp < this.stack.length - 1 && this.enabled; //if stack pointer is not at the end
+    }
+
+    /**
+     * Gets the last command that was undone
+     */
+    peekForward() {
+        return this.canRedo() ? this.stack[this.sp + 1] : null
     }
 
     /**

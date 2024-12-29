@@ -9,7 +9,7 @@ export function createCanvasElement(): HTMLCanvasElement {
 }
 
 /**
- * Creates a HTML div element.
+ * Creates an HTML div element.
  * @param innerHTML - HTML string to add to the div
  * @param id - id of the div
  * @param classList - list of classes to add to the div
@@ -18,7 +18,7 @@ export function createCanvasElement(): HTMLCanvasElement {
  *
  * @category DOM
  */
-export function createDiv<T extends keyof HTMLElementTagNameMap = 'div'>({innerHTML = '', id, classList, addToBody = true, elementTag = <T>'div'}: Partial<InnerHTML> & {id?: string, classList?: string[], addToBody?:boolean, elementTag?: T}): HTMLElementTagNameMap[T] {
+export function createDiv<T extends keyof HTMLElementTagNameMap = 'div'>({innerHTML = '', id, classList, addToBody = true, elementTag = <T>'div'}: {innerHTML?: string, id?: string, classList?: string[], addToBody?:boolean, elementTag?: T}): HTMLElementTagNameMap[T] {
     const elem = document.createElement(elementTag)
     if (id) elem.id = id
     elem.innerHTML = innerHTML
