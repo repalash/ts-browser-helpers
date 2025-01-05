@@ -148,7 +148,7 @@ export class JSUndoManager {
                 return p((command as JSUndoManagerCommand2))
             } else {
                 console.error(command, p, this.presets)
-                throw new Error(`Predefined command not found`)
+                throw new Error(`Preset command not found`)
             }
         } else
             return command as JSUndoManagerCommand1

@@ -1,6 +1,6 @@
 {
   "name": "ts-browser-helpers",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "description": "A collection of utility classes, functions and decorators for javascript/typescript projects, for use in the browser.",
   "main": "dist/bundle.esm.js",
   "module": "dist/bundle.esm.js",
@@ -22,6 +22,16 @@
 
     "new:pack": "npm run prepare && clean-package && npm pack && clean-package restore",
     "new:publish": "git diff --exit-code --name-only HEAD * && npm run prepare && clean-package && npm publish && clean-package restore && git tag v$npm_package_version"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/bundle.esm.js",
+      "require": "./dist/bundle.umd.js"
+    },
+    "./dist/": {
+      "import": "./dist/",
+      "require": "./dist/"
+    }
   },
   "clean-package": {
     "remove": [
