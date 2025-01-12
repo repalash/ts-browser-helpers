@@ -1,6 +1,6 @@
 {
   "name": "ts-browser-helpers",
-  "version": "0.16.1",
+  "version": "0.16.2",
   "description": "A collection of utility classes, functions and decorators for javascript/typescript projects, for use in the browser.",
   "main": "dist/bundle.esm.js",
   "module": "dist/bundle.esm.js",
@@ -26,6 +26,7 @@
   "exports": {
     ".": {
       "import": "./dist/bundle.esm.js",
+      "types": "./dist/index.d.ts",
       "require": "./dist/bundle.umd.js"
     },
     "./dist/": {
