@@ -1,0 +1,8 @@
+{
+  "out": "docs",
+  "entryPoints": [
+    "src/index.ts"
+  ],
+  "readme": "none",
+  "hideGenerator": true
+}

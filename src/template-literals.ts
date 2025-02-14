@@ -45,15 +45,15 @@ export const html = (strings: any, ...rest: any[]) => String.raw({raw: strings} 
 
 /**
  * Converts an SVG string to data url. This is useful for creating images from SVGs, or using SVGs in CSS.
- * To use put in template string: `url(${svgUrl\`<svg>...</svg>\`})`
+ * To use put in template string: ```url(${svgUrl`<svg>...</svg>`})```
  * @param strings - template strings
  * @param rest - template values
  *
  * @example
- * ```ts
- * const url = svgUrl\`
+ * ```typescript
+ * const url = svgUrl`
  *  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"> ... </svg>
- * \`
+ * `
  * console.log(url) // data:image/svg+xml;charset=UTF-8,...
  * ```
  *

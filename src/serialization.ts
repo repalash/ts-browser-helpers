@@ -111,7 +111,7 @@ export class Serialization{
             // Handle classes with explicit serialization with toJSON and fromJSON functions
             // toJSON functions can call Serialize(with isThis=true) to serialize the properties with @serialize decorator
             if (typeof obj.toJSON === 'function') {
-                const res = obj.toJSON(meta)
+                const res = obj.toJSON(meta, true)
                 if (obj.serializableClassId && res) res.serializableClassId = obj.serializableClassId
                 return res
             }
@@ -229,7 +229,7 @@ export class Serialization{
         // Handle classes with explicit serialization with toJSON and fromJSON functions
         // fromJSON functions can call Deserialize(with isThis=true) to deserialize the properties with @serialize decorator
         if (!isThis && typeof obj?.fromJSON === 'function') {
-            obj.fromJSON(data, meta)
+            obj.fromJSON(data, meta, true)
             return obj // cannot be sure what the return value is
         }
 
