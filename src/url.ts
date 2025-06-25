@@ -5,7 +5,8 @@
  *
  * @category URL
  */
-export function getUrlQueryParam(p: string, def: any = null) {
+export function getUrlQueryParam(p: string, def: string): string
+export function getUrlQueryParam(p: string, def: string | null = null): string | null {
     const url = new URL(window.location.href)
     return url.searchParams.get(p) ?? def
 }

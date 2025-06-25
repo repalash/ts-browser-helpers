@@ -42,6 +42,7 @@ export function onChange<TTarget = any>(
         if (descriptor) {
             if (objectHasOwn(descriptor, 'value')) delete descriptor.value
             if (objectHasOwn(descriptor, 'writable')) delete descriptor.writable
+            // @ts-expect-error ts version issue?
             if (objectHasOwn(descriptor, 'initializer')) delete (descriptor as any).initializer
             return Object.assign(descriptor, prop)
         }

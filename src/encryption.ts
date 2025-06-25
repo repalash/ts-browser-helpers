@@ -16,11 +16,11 @@
  *
  * @category Encryption
  */
-export async function aesGcmEncrypt<T extends string|Uint8Array>(content: T, password: string|Uint8Array, prefix?: string | Uint8Array): Promise<T> {
+export async function aesGcmEncrypt<T extends string|Uint8Array>(content: T, password: string|Uint8Array, prefix?: string | Uint8Array, ivLen = 12): Promise<T> {
     const pwUtf8 = typeof password === 'string' ? new TextEncoder().encode(password) : password // encode password as UTF-8
     const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8) // hash the password
 
-    const iv = crypto.getRandomValues(new Uint8Array(12)) // get 96-bit random iv
+    const iv = crypto.getRandomValues(new Uint8Array(ivLen)) // get 96-bit random iv
     const ivStr = Array.from(iv).map(b => String.fromCharCode(b)).join('') // iv as utf-8 string
 
     const alg = {name: 'AES-GCM', iv: iv} // specify algorithm to use
@@ -57,18 +57,18 @@ export async function aesGcmEncrypt<T extends string|Uint8Array>(content: T, pas
  *
  * @category Encryption
  */
-export async function aesGcmDecrypt<T extends string|Uint8Array>(ciphertext: T, password: string|Uint8Array): Promise<T> {
+export async function aesGcmDecrypt<T extends string|Uint8Array>(ciphertext: T, password: string|Uint8Array, ivLen = 12): Promise<T> {
     const pwUtf8 = typeof password === 'string' ? new TextEncoder().encode(password) : password // encode password as UTF-8
     const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8) // hash the password
 
-    const ivStr = ciphertext.slice(0, 12)
+    const ivStr = ciphertext.slice(0, ivLen)
     const iv = typeof ivStr === 'string' ? new Uint8Array(Array.from(ivStr).map(ch => ch.charCodeAt(0))) : ivStr // decode base64 iv
 
     const alg = {name: 'AES-GCM', iv: iv} // specify algorithm to use
 
     const key = await crypto.subtle.importKey('raw', pwHash, alg, false, ['decrypt']) // generate key from pw
 
-    const ctStr = ciphertext.slice(12)
+    const ctStr = ciphertext.slice(ivLen)
     const ctUint8 = typeof ctStr === 'string' ? new Uint8Array(Array.from(ctStr).map(ch => ch.charCodeAt(0))) : ctStr
     // note: why doesn't ctUint8 = new TextEncoder().encode(ctStr) work?
 

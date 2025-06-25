@@ -51,7 +51,7 @@ export function getKeyByValue(object: Record<string, any>, value: any): string|u
  * @param o
  * @param v
  */
-export function objectHasOwn(o: object, v: PropertyKey): boolean {
+export function objectHasOwn<T extends object= object>(o: T, v: keyof T): boolean {
     return Object.hasOwn ? Object.hasOwn(o, v) : o.hasOwnProperty(v)
 }
 

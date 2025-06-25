@@ -217,7 +217,3 @@ npm install ts-browser-helpers
 - [ThreePipe](https://threepipe.org/) - A 3D viewer framework for the web.
 - [uiconfig.js](https://repalash.com/uiconfig.js/) - A simple, lightweight and easy to use UI configuration library for javascript/typescript projects.
 
-## References
-
-Generated with [rollup-library-starter](https://github.com/repalash/rollup-library-starter)
-
