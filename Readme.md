@@ -23,12 +23,15 @@ npm install ts-browser-helpers
 
 ## Browser
 
-| Function                                                                         | Description                                                   |
-|----------------------------------------------------------------------------------|---------------------------------------------------------------|
-| [blobToDataURL](https://repalash.com/ts-browser-helpers/functions/blobToDataURL) | Convert a blob to a data url.                                 |
-| [downloadBlob](https://repalash.com/ts-browser-helpers/functions/downloadBlob)   | Download a blob as a file in the browser.                     |
-| [downloadFile](https://repalash.com/ts-browser-helpers/functions/downloadFile)   | Download a file in the browser.                               |
-| [uploadFile](https://repalash.com/ts-browser-helpers/functions/uploadFile)       | Prompt the user to select a file or directory in the browser. |
+| Function                                                                                        | Description                                                                                                                                                                                                                  |
+|-------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [IDialogWrapper](https://repalash.com/ts-browser-helpers/interfaces/IDialogWrapper.md)          | A simple interface for dialog wrappers that can be used to abstract away the browser's built-in dialog methods or custom implementations.                                                                                    |
+| [htmlDialogWrapper](https://repalash.com/ts-browser-helpers/variables/htmlDialogWrapper.md)     | A custom dialog wrapper that uses HTML elements to create alert, prompt, and confirm dialogs inspired by radix/shadcn style. Provides API similar to the browser's built-in dialog methods, with better UI and more options. |
+| [windowDialogWrapper](https://repalash.com/ts-browser-helpers/variables/windowDialogWrapper.md) | A dialog wrapper that uses the browser's built-in `window.alert`, `window.prompt`, and `window.confirm` methods.                                                                                                             |
+| [blobToDataURL](https://repalash.com/ts-browser-helpers/functions/blobToDataURL)                | Convert a blob to a data url.                                                                                                                                                                                                |
+| [downloadBlob](https://repalash.com/ts-browser-helpers/functions/downloadBlob)                  | Download a blob as a file in the browser.                                                                                                                                                                                    |
+| [downloadFile](https://repalash.com/ts-browser-helpers/functions/downloadFile)                  | Download a file in the browser.                                                                                                                                                                                              |
+| [uploadFile](https://repalash.com/ts-browser-helpers/functions/uploadFile)                      | Prompt the user to select a file or directory in the browser.                                                                                                                                                                |
 
 ## Color
 

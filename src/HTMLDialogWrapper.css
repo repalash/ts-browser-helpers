@@ -1,0 +1,108 @@
+.dialog-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: calc(100% - 32px);
+    width: calc(100% - 32px);
+    color: oklch(0.145 0 0);
+    background-color: oklch(1 0 0);
+    border: 1px solid oklch(0.922 0 0);
+    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.1) 0px 4px 6px -4px;
+    display: flex;
+    gap: 1rem;
+    flex-direction: column;
+    box-sizing: border-box;
+    font-family: Inter, -apple-system, "system-ui", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    transition: max-width 0.5s, width 0.5s, height 0.5s;
+}
+
+.dialog-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+}
+
+.dialog-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: oklch(.145 0 0);
+}
+
+.dialog-message {
+    color: oklch(.556 0 0);
+    font-size: 0.875rem;
+    line-height: 1.42;
+}
+
+.dialog-footer {
+    display: flex;
+    gap: 10px;
+    flex-direction: column-reverse;
+}
+@media (width >= 40rem) {
+    .dialog-content {
+        text-align: left;
+    }
+    .dialog-container {
+        max-width: 512px;
+        width: 512px;
+    }
+    .dialog-footer {
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+}
+
+.dialog-button, .dialog-input {
+    height: 2.25rem;
+    box-sizing: border-box;
+}
+
+.dialog-input{
+    width: 100%;
+    padding: 0.25rem 0.75rem;
+    font-size: 1rem;
+    border: 1px solid oklch(0.922 0 0);
+    border-radius: 0.5rem;
+    background: transparent;
+    color: oklch(.145 0 0);
+    outline: none;
+    transition: outline-width 0.2s;
+}
+/*.dialog-input::selection, .dialog-input::-moz-selection, .dialog-input::-webkit-selection {*/
+/*    background-color: oklch(.145 0 0);*/
+/*    color: oklch(0.922 0 0);*/
+/*}*/
+
+.dialog-button {
+    padding: 0.5rem 1rem;
+    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+    border-radius: 0.5rem;
+    border: 1px solid oklch(0.922 0 0);
+    cursor: pointer;
+    font-size: 0.875rem;
+    background-color: oklch(1 0 0);
+    color: oklch(.145 0 0);
+    transition: background-color 0.2s ease, color 0.2s ease, outline-width 0.2s ease;
+}
+.dialog-button:focus, .dialog-input:focus {
+    outline: 3px solid #6d7a8c66;
+}
+.dialog-button:hover {
+    background-color: oklch(0.98 0 0);
+}
+
+.dialog-ok {
+    background-color: oklch(.145 0 0);
+    color: oklch(1 0 0);
+}
+
+.dialog-ok:hover {
+    background-color: oklch(0.250 0 0);
+}

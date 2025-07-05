@@ -30,3 +30,5 @@ export {pathJoin, getUrlQueryParam, setUrlQueryParam, remoteWorkerURL} from './u
 export {css, glsl, html, svgUrl} from './template-literals'
 export {Serialization} from './serialization'
 export {FnCaller} from './fnCaller'
+export {windowDialogWrapper, type IDialogWrapper} from './DialogWrapper'
+export {htmlDialogWrapper} from './HTMLDialogWrapper'
