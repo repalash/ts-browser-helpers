@@ -5,11 +5,11 @@
  *
  * @category URL
  */
-export function getUrlQueryParam(p: string, def: string): string
 export function getUrlQueryParam(p: string, def: string | null = null): string | null {
     const url = new URL(window.location.href)
     return url.searchParams.get(p) ?? def
 }
+// export function getUrlQueryParam(p: string, def: string): string  // todo  this doesnt work as generated d.ts is incomplete
 
 /**
  * Set URL query parameter. If value is null, remove parameter. Similar to PHP's $_GET
