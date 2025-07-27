@@ -147,44 +147,46 @@ export class Serialization{
         // If data is an embedded resource in meta
         if(data && typeof data === 'object' && (data.constructor||Object) === Object && data.resource && typeof data.resource === 'string' && data.uuid){
             const res = meta?.[data.resource]
-            if(res) {
-                // isResource = true
-                data = res[data.uuid]
-                if(typeof data === 'object') {
-                    data.__useCount = data.__useCount ? data.__useCount + 1 : 1 // used for materials for now, see AssetManagerPlugin.importViewerConfig
-                }
-                if(!data) console.warn(`Resource ${data.resource} with uuid ${data.uuid} not found`)
-                if(obj === data) return obj // same object
-                if(data && typeof data === 'object' ) {
-                    const isDeserializedClass = (data.constructor||Object) !== Object // data is already deserialized
-                    if(isDeserializedClass) {
-                        if (!obj) {
-                            return data
-                        } else {
-                            // todo: if data is deserialized already and !== obj.
-                            // obj is not null, could be a Texture, Material, Object etc
-                            // should we ignore the current object and assign one from meta or copy data from meta to current object
-                            // for textures, it should be replaced. should we copy if uuid is same?
-                            // for materials, if uuid is same and type is same it should be copied otherwise replaced
-                            // for vector3d, copy data
-                            // todo: need to implement.
-                            console.warn("replacing object", obj, 'with deserialized object from meta', data)
-                            return data;
-                        }
-                    }else { // data is not deserialized, or is a normal object
-                        // this is not supported. meta should only have class instances, not js objects
-                        console.error('Deserialize; meta should only have class instances, not js objects', data, obj, meta)
-                        if(!obj){
-                            // continue deserializing and return deserialized - done
-                        }else {
-                            // continue deserializing then copy to current obj?
-                        }
-                    }
-                }
-            }
-            else {
+            if (!res) {
                 console.warn(`Resource ${data.resource} not found`)
                 return obj
+            }
+            const resData = res[data.uuid]
+            if (!resData) {
+                console.warn(`Resource ${data.resource} with uuid ${data.uuid} not found`)
+                return obj
+            }
+            data = resData
+            // isResource = true
+            if (typeof data === 'object') {
+                data.__useCount = data.__useCount ? data.__useCount + 1 : 1 // used for materials for now, see AssetManagerPlugin.importViewerConfig
+            }
+            if (obj === data) return obj // same object
+            if (data && typeof data === 'object') {
+                const isDeserializedClass = (data.constructor || Object) !== Object // data is already deserialized
+                if (isDeserializedClass) {
+                    if (!obj) {
+                        return data
+                    } else {
+                        // todo: if data is deserialized already and !== obj.
+                        // obj is not null, could be a Texture, Material, Object etc
+                        // should we ignore the current object and assign one from meta or copy data from meta to current object
+                        // for textures, it should be replaced. should we copy if uuid is same?
+                        // for materials, if uuid is same and type is same it should be copied otherwise replaced
+                        // for vector3d, copy data
+                        // todo: need to implement.
+                        console.warn("replacing object", obj, 'with deserialized object from meta', data)
+                        return data;
+                    }
+                } else { // data is not deserialized, or is a normal object
+                    // this is not supported. meta should only have class instances, not js objects
+                    console.error('Deserialize; meta should only have class instances, not js objects', data, obj, meta)
+                    if (!obj) {
+                        // continue deserializing and return deserialized - done
+                    } else {
+                        // continue deserializing then copy to current obj?
+                    }
+                }
             }
         }
         if(data && typeof data === 'object' && (data.constructor||Object) !== Object && !Array.isArray(data) && !data.serializableClassId){

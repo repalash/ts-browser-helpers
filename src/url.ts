@@ -6,6 +6,7 @@
  * @category URL
  */
 export function getUrlQueryParam(p: string, def: string | null = null): string | null {
+    if(!window?.location?.href) return def
     const url = new URL(window.location.href)
     return url.searchParams.get(p) ?? def
 }
@@ -20,7 +21,8 @@ export function getUrlQueryParam(p: string, def: string | null = null): string |
  * @category URL
  */
 export function setUrlQueryParam(p: string, v: string|null, reload = false) { // pass v = null to remove
-    const params = new URLSearchParams(location.search)
+    if(!window?.location?.href) return
+    const params = new URLSearchParams(window.location.search)
     if (v === null || v === undefined) {
         if (params.has(p))
             params.delete(p)
