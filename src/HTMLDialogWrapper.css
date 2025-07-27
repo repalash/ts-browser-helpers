@@ -106,3 +106,23 @@
 .dialog-ok:hover {
     background-color: oklch(0.250 0 0);
 }
+
+/* Add ellipsis styling for links */
+.dialog-link {
+    max-width: 100%;
+    display: inline-block;
+    vertical-align: bottom;
+    text-decoration: underline;
+    /*color: var(--link-color, #2563eb);*/
+    color: var(#2563eb);
+    overflow: hidden;
+}
+
+.dialog-link-text {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+}

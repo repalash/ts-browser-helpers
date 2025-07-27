@@ -1,5 +1,8 @@
 # TS Browser Helpers
 
+[![NPM Package](https://img.shields.io/npm/v/ts-browser-helpers.svg)](https://www.npmjs.com/package/ts-browser-helpers)
+[![License: Apache 2.0](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/)
+
 A collection of utility classes, functions and types for javascript/typescript projects, for use in the browser.
 
 ## Installation

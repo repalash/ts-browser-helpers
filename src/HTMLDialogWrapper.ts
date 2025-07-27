@@ -2,17 +2,58 @@ import {IDialogWrapper} from './DialogWrapper'
 import cssTemplate from './HTMLDialogWrapper.css?inline'
 
 let styleElement: HTMLStyleElement | null = null
+
+// Utility to escape HTML special characters
+function escapeHtml(str: string) {
+    return str.replace(/[&<>"']/g, function (m) {
+        switch (m) {
+            case '&': return '&amp;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '"': return '&quot;';
+            case "'": return '&#39;';
+            default: return m;
+        }
+    });
+}
+
+// Utility to auto-link URLs in text
+function linkify(text: string) {
+    // Simple URL regex
+    const urlRegex = /((https?:\/\/|www\.)[^\s<]+)/g;
+    return text.replace(urlRegex, (url) => {
+        let href = url;
+        if (!href.startsWith('http')) href = 'https://' + href;
+        // Use a span for the visible text to apply ellipsis
+        return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="dialog-link"><span class="dialog-link-text">${escapeHtml(url)}</span></a>`;
+    });
+}
+
+// Render message with line breaks and links, safely
+function renderMessage(message: string) {
+    // Escape HTML, then linkify, then replace line breaks
+    const escaped = escapeHtml(message);
+    const linked = linkify(escaped);
+    return linked.replace(/\n/g, '<br>');
+}
+
+function titleMessage(props: { title?: string; message: string; ok?: string }) {
+    return `
+${props.title ? `<div class="dialog-title">${escapeHtml(props.title)}</div>` : ''}
+<div class="dialog-message">${renderMessage(props.message)}</div>
+`;
+}
+
 const alertTemplate = (props: {
     title?: string
     message: string
     ok?: string
 })=>`
 <div class="dialog-content">
-    ${props.title ? `<div class="dialog-title">${props.title}</div>` : ''}
-    <div class="dialog-message">${props.message}</div>
+${titleMessage(props)}
 </div>
 <div class="dialog-footer">
-    ${props.ok && `<button class="dialog-button dialog-ok">${props.ok}</button>` || ''}
+    ${props.ok && `<button class="dialog-button dialog-ok">${escapeHtml(props.ok)}</button>` || ''}
 </div>
 `
 const confirmTemplate = (props: {
@@ -22,12 +63,11 @@ const confirmTemplate = (props: {
     cancel?: string
 })=>`
 <div class="dialog-content">
-    ${props.title ? `<div class="dialog-title">${props.title}</div>` : ''}
-    <div class="dialog-message">${props.message}</div>
+${titleMessage(props)}
 </div>
 <div class="dialog-footer">
-    ${props.cancel && `<button class="dialog-button dialog-cancel">${props.cancel}</button>` || ''}
-    ${props.ok && `<button class="dialog-button dialog-ok">${props.ok}</button>` || ''}
+    ${props.cancel && `<button class="dialog-button dialog-cancel">${escapeHtml(props.cancel)}</button>` || ''}
+    ${props.ok && `<button class="dialog-button dialog-ok">${escapeHtml(props.ok)}</button>` || ''}
 </div>
 `
 
@@ -39,13 +79,12 @@ const promptTemplate = (props: {
     defaultValue?: string
 })=>`
 <div class="dialog-content">
-    ${props.title ? `<div class="dialog-title">${props.title}</div>` : ''}
-    <div class="dialog-message">${props.message}</div>
+    ${titleMessage(props)}
     <input class="dialog-input" type="text" value="${props.defaultValue ?? ''}" style="margin-top:0.5rem;"/>
 </div>
 <div class="dialog-footer">
-    ${props.cancel && `<button class="dialog-button dialog-cancel">${props.cancel}</button>` || ''}
-    ${props.ok && `<button class="dialog-button dialog-ok">${props.ok}</button>` || ''}
+    ${props.cancel && `<button class="dialog-button dialog-cancel">${escapeHtml(props.cancel)}</button>` || ''}
+    ${props.ok && `<button class="dialog-button dialog-ok">${escapeHtml(props.ok)}</button>` || ''}
 </div>
 `
 
