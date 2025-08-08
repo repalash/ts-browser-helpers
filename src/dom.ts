@@ -83,6 +83,8 @@ export async function createScriptFromURL(url: string, root = document.head): Pr
  * Sets the innerHTML of an element and recreates all script tags so they are executed.
  * @param element - element to set the innerHTML of
  * @param html - innerHTML string to set
+ *
+ * @category DOM
  */
 export async function setInnerHTMLWithScripts(element: HTMLElement, html: string) {
     element.innerHTML = html
@@ -108,6 +110,8 @@ export async function setInnerHTMLWithScripts(element: HTMLElement, html: string
  * Clones a script tag.
  * @param script - script tag to clone
  * @param newScript - optional new script tag to clone into. If not provided a new script tag will be created.
+ *
+ * @category DOM
  */
 export function cloneScriptTag(script: HTMLScriptElement, newScript?: HTMLScriptElement) {
     newScript = newScript ?? document.createElement('script')

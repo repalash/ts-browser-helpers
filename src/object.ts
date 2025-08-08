@@ -50,6 +50,8 @@ export function getKeyByValue(object: Record<string, any>, value: any): string|u
  * Check if an object has a property. Same as {@link Object.hasOwn} or {@link Object.hasOwnProperty}
  * @param o
  * @param v
+ *
+ * @category JS Object
  */
 export function objectHasOwn<T extends object= object>(o: T, v: keyof T): boolean {
     return Object.hasOwn ? Object.hasOwn(o, v) : o.hasOwnProperty(v)
@@ -63,6 +65,8 @@ export function objectHasOwn<T extends object= object>(o: T, v: keyof T): boolea
  * @param obj - object
  * @param fn - function to execute on each property
  * @param inPlace - if true, the original object is modified. Default is true
+ *
+ * @category JS Object
  */
 export function objectMap<T extends string|number|symbol, V>(obj: Record<T, V>, fn: (val: V, key: T)=>V, inPlace = true): Record<T, V> {
     const result: any = inPlace ? obj : {}
@@ -76,8 +80,38 @@ export function objectMap<T extends string|number|symbol, V>(obj: Record<T, V>, 
  * Similar to {@link objectMap} but uses {@link Object.fromEntries} to create the new object, so keys can also be changed.
  * @param obj
  * @param fn
+ *
+ * @category JS Object
  */
 export function objectMap2<T extends string|number|symbol, V = any>(obj: Record<T, V>, fn: ([key, val]: [T, V])=>[T, V]): Record<T, V> {
     return Object.fromEntries((Object.entries(obj) as [T, V][]).map((v: [T, V])=>fn(v))) as Record<T, V>
 }
 
+// these are not very useful, but kept for reference
+// const pick = <T extends {}, K extends keyof T>(obj: T, ...keys: K[]) => (
+//     Object.fromEntries(
+//         keys
+//             .filter(key => key in obj)
+//             .map(key => [key, obj[key]])
+//     ) as Pick<T, K>
+// );
+//
+// const inclusivePick = <T extends {}, K extends (string | number | symbol)>(
+//     obj: T, ...keys: K[]
+// ) => (
+//     Object.fromEntries(
+//         keys
+//             .map(key => [key, obj[key as unknown as keyof T]])
+//     ) as {[key in K]: key extends keyof T ? T[key] : undefined}
+// )
+//
+// const omit = <T extends {}, K extends keyof T>(
+//     obj: T, ...keys: K[]
+// ) =>(
+//     Object.fromEntries(
+//         Object.entries(obj)
+//             .filter(([key]) => !keys.includes(key as K))
+//     ) as Omit<T, K>
+// )
+//
+// export const ObjectFns = { pick, inclusivePick, omit } as const;

@@ -1,5 +1,7 @@
 /**
  * A simple event interface with typed event types.
+ *
+ * @category Event
  */
 export interface IEvent<T> {
     type: T;
@@ -9,6 +11,8 @@ export interface IEvent<T> {
 
 /**
  * A simple event dispatcher interface with {@link IEvent} as event type.
+ *
+ * @category Event
  */
 export interface IEventDispatcher<T> {
 
@@ -42,6 +46,8 @@ export interface IEventDispatcher<T> {
 
 /**
  * A simple event dispatcher with typed event types, see {@link IEventDispatcher}.
+ *
+ * @category Event
  */
 export class SimpleEventDispatcher<T extends string> implements IEventDispatcher<T> {
 

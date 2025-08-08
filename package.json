@@ -30,6 +30,10 @@
       "types": "./dist/index.d.ts",
       "require": "./dist/bundle.umd.js"
     },
+    "./src/": {
+      "import": "./src/",
+      "require": "./src/"
+    },
     "./dist/": {
       "import": "./dist/",
       "require": "./dist/"

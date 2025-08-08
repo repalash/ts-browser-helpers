@@ -9,17 +9,19 @@
  * @category Images
  */
 export function imageBitmapToCanvas(bitmap: ImageBitmap | CanvasImageSource | any, maxWidth = 8192, detachBitmap = false): HTMLCanvasElement {
-    if (!bitmap.width || !bitmap.height) throw new Error('Invalid bitmap')
+    const width = (bitmap.width || (bitmap as HTMLVideoElement).videoWidth)
+    const height = (bitmap.height || (bitmap as HTMLVideoElement).videoHeight)
+    if (!width || !height) throw new Error('Invalid bitmap')
 
     // create a canvas
     const canvas = document.createElement('canvas')
     // resize it to the size of our ImageBitmap
-    canvas.width = Math.min(maxWidth, bitmap.width as number)
-    canvas.height = Math.floor(1.0 + canvas.width * (bitmap.height as number) / (bitmap.width as number))
+    canvas.width = Math.min(maxWidth, width as number)
+    canvas.height = Math.floor(1.0 + canvas.width * (height as number) / (width as number))
 
     // try to get a bitmaprenderer context if same size
     const isBitmap = bitmap instanceof ImageBitmap
-    const ctx = isBitmap && detachBitmap && Math.abs(canvas.width - bitmap.width) < 0.5 ? canvas.getContext('bitmaprenderer') : undefined
+    const ctx = isBitmap && detachBitmap && Math.abs(canvas.width - width) < 0.5 ? canvas.getContext('bitmaprenderer') : undefined
     if (ctx) {
         // transfer the ImageBitmap to it
         ctx.transferFromImageBitmap(bitmap as ImageBitmap) // less memory but it will detach the bitmap
@@ -47,7 +49,7 @@ export function imageBitmapToCanvas(bitmap: ImageBitmap | CanvasImageSource | an
  */
 // export function imageBitmapToBase64(bitmap: ImageBitmap | CanvasImageSource, maxWidth = 8192, detachBitmap = false, type = 'image/png'): string {
 export function imageBitmapToBase64(bitmap: ImageBitmap | Exclude<CanvasImageSource,VideoFrame>, maxWidth = 8192, detachBitmap = false, type = 'image/png'): string {
-    if (!bitmap.width || !bitmap.height) return ''
+    if (!(bitmap.width || (bitmap as HTMLVideoElement).videoWidth) || !(bitmap.height || (bitmap as HTMLVideoElement).videoHeight)) return ''
 
     // create a canvas
     const canvas = imageBitmapToCanvas(bitmap, maxWidth, false)
@@ -75,7 +77,7 @@ export function imageBitmapToBase64(bitmap: ImageBitmap | Exclude<CanvasImageSou
  */
 // export async function imageBitmapToBlob(bitmap: ImageBitmap | CanvasImageSource, maxWidth = 8192, detachBitmap = false, type = 'image/png'): Promise<Blob> {
 export async function imageBitmapToBlob(bitmap: ImageBitmap | Exclude<CanvasImageSource,VideoFrame>, maxWidth = 8192, detachBitmap = false, type = 'image/png'): Promise<Blob> {
-    if (!bitmap.width || !bitmap.height) return Promise.reject('Invalid bitmap')
+    if (!(bitmap.width || (bitmap as HTMLVideoElement).videoWidth) || !(bitmap.height || (bitmap as HTMLVideoElement).videoHeight)) return Promise.reject('Invalid bitmap')
 
     // create a canvas
     const canvas = imageBitmapToCanvas(bitmap, maxWidth, false)
@@ -102,6 +104,7 @@ export async function imageBitmapToBlob(bitmap: ImageBitmap | Exclude<CanvasImag
  * @category Images
  */
 export async function imageUrlToImageData(url: string): Promise<ImageData> {
+    // todo support mp4 by creating video instead
     return new Promise<ImageData>((resolve, reject) => {
         const image = new Image()
         image.addEventListener('load', () => {
@@ -130,6 +133,8 @@ export async function imageUrlToImageData(url: string): Promise<ImageData> {
 
 /**
  * Options for {@link imageToCanvas}.
+ *
+ * @category Images
  */
 export interface ImageCanvasOptions{
     width: number,
@@ -185,6 +190,8 @@ export function imageToCanvas(image: HTMLImageElement, {
  * This can be used to convert a WebGL texture/render target to a canvas/data url.
  * Note: if the output is flipped, use {@link canvasFlipY} after this, like `canvasFlipY(imageDataToCanvas(imageData))`
  * @param data - image data to convert
+ *
+ * @category Images
  */
 export function imageDataToCanvas(data: ImageData){
     const canvas = document.createElement('canvas')
@@ -198,6 +205,8 @@ export function imageDataToCanvas(data: ImageData){
 
 /**
  * Check if the browser supports exporting to webp, with the canvas.toDataURL('image/webp') method.
+ *
+ * @category Images
  */
 export function isWebpExportSupported() {
     const elem = document.createElement('canvas')
@@ -215,15 +224,17 @@ export function isWebpExportSupported() {
  * Returns a new canvas with the image/canvas-content flipped vertically.
  * Useful for putImageData(as it does not respect scale and translate) and WebGL textures, which are flipped vertically.
  * @param canvas
+ *
+ * @category Images
  */
 // export function canvasFlipY(canvas: Exclude<CanvasImageSource,SVGImageElement>): HTMLCanvasElement {
 export function canvasFlipY(canvas: Exclude<CanvasImageSource,SVGImageElement|VideoFrame>): HTMLCanvasElement {
     const newCanvas = document.createElement('canvas')
-    newCanvas.width = canvas.width
-    newCanvas.height = canvas.height
+    newCanvas.width = canvas.width || (canvas as HTMLVideoElement).videoWidth || 1
+    newCanvas.height = canvas.height || (canvas as HTMLVideoElement).videoHeight || 1
     const ctx = newCanvas.getContext('2d')
     if (!ctx) throw new Error('Unable to get 2d context')
-    ctx.translate(0, canvas.height)
+    ctx.translate(0, canvas.height || (canvas as HTMLVideoElement).videoHeight || 1)
     ctx.scale(1, -1)
     ctx.drawImage(canvas, 0, 0)
     return newCanvas
@@ -232,6 +243,8 @@ export function canvasFlipY(canvas: Exclude<CanvasImageSource,SVGImageElement|Vi
 /**
  * Load a Blob or a file containing an image and return an HTMLImageElement.
  * @param blob
+ *
+ * @category Images
  */
 export function blobToImage(blob: Blob){
     return new Promise<HTMLImageElement>((resolve, reject) => {

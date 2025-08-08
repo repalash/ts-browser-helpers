@@ -14,6 +14,8 @@ export function absMax(a: number, b: number): number {
  * @param number - the number to update
  * @param bitPosition - the bit position to update from the least significant bit (0) to most significant bit (31)
  * @param bitValue - 0 or 1
+ *
+ * @category Maths
  */
 export function updateBit(number: number, bitPosition: number, bitValue: number): number {
     const bitValueNormalized = bitValue ? 1 : 0
@@ -25,6 +27,8 @@ export function updateBit(number: number, bitPosition: number, bitValue: number)
  * Clears the bit at the given position.
  * @param number - the number to update
  * @param bitPosition - the bit position to update from the least significant bit (0) to most significant bit (31)
+ *
+ * @category Maths
  */
 export function clearBit(number: number, bitPosition: number): number {
     const clearMask = ~(1 << bitPosition)
@@ -34,6 +38,8 @@ export function clearBit(number: number, bitPosition: number): number {
 /**
  * Generate a UUID v4
  * https://stackoverflow.com/a/53723395/2229899
+ *
+ * @category Maths
  */
 export function uuidV4(){
     const ho = (n: number, p: number) => n.toString(16).padStart(p, '0'); /// Return the hexadecimal text representation of number `n`, padded with zeroes to be of length `p`

@@ -10,6 +10,8 @@ const isProd = process.env.NODE_ENV === 'production'
 const { name, version, author } = packageJson
 const {main, module, browser} = packageJson
 
+const globals = {}
+
 export default defineConfig({
     optimizeDeps: {
         exclude: [],
@@ -39,7 +41,9 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 // inlineDynamicImports: false,
+                globals
             },
+            external: Object.keys(globals),
         },
     },
     plugins: [

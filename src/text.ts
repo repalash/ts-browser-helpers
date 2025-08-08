@@ -89,6 +89,8 @@ export function replaceAll(str: string, find: string, replace: string) {
  * @param prepend - Prepend the replacement string
  * @param append - Append the replacement string
  * @param notFoundCallback - Callback to call if the string is not found
+ *
+ * @category Text
  */
 export function safeReplaceString(source: string, str: string, newStr: string, {
     replaceAll = false,
@@ -115,6 +117,8 @@ export function safeReplaceString(source: string, str: string, newStr: string, {
  * Find the longest common prefix in an array of strings
  * https://stackoverflow.com/questions/68702774/longest-common-prefix-in-javascript
  * @param words
+ *
+ * @category Text
  */
 export function longestCommonPrefix(words: string[]): string {
     words.sort() // shortest string will be first and the longest last

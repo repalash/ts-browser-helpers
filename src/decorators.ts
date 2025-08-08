@@ -54,6 +54,8 @@ export function onChange<TTarget = any>(
  * Similar to {@link onChange}, but accepts any function and paramType defaults to 'void'. The function is called with no parameters. if 'void'
  * @param fnKey
  * @param paramType
+ *
+ * @category Decorators
  */
 export function onChange2(
     fnKey: string|AnyFunction,
@@ -66,6 +68,8 @@ export function onChange2(
  * Similar to {@link onChange}, but accepts any function and paramType defaults to 'object'. The function is called with an object parameter: `{key, value, oldValue, target}`.
  * @param fnKey
  * @param paramType
+ *
+ * @category Decorators
  */
 export function onChange3<TTarget = any>(
     fnKey: string|((obj:{key: string, value: any, oldValue: any, target: TTarget})=>void),
@@ -78,6 +82,8 @@ export function onChange3<TTarget = any>(
  * Similar to onChange but dispatches an event instead of calling a function.
  * Requires `dispatchEvent` to be defined on the target.
  * @param eventName - The name of the event to dispatch. Default: '`key`-changed'
+ *
+ * @category Decorators
  */
 export function onChangeDispatchEvent(eventName?: string): PropertyDecorator {
     return onChange((key, value, oldValue, target) => {
@@ -106,6 +112,8 @@ export function serialize(key?: string): PropertyDecorator {
  * Decorator to mark a class as serializable using the {@link Serialization} class.
  * @note - Requires "experimentalDecorators": true in tsconfig.json
  * @param id - The id to use when serializing the class. This is used to identify the class when deserializing. Class names can be mangled during minification, so it is required to provide an id.
+ *
+ * @category Decorators
  */
 export function serializable(id: string) {
     return <T extends new (...args: any[]) => any>(constructor: T) =>{

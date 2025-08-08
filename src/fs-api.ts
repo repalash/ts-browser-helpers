@@ -20,6 +20,8 @@
  * Open a handle to an existing file on the local file system.
  *
  * @return {!Promise<FileSystemFileHandle>} Handle to the existing file.
+ *
+ * @category File System
  */
 export async function getFileHandle(): Promise<FileSystemFileHandle> {
     // For Chrome 86 and later...
@@ -34,6 +36,8 @@ export async function getFileHandle(): Promise<FileSystemFileHandle> {
  * Create a handle to a new (text) file on the local file system.
  *
  * @return {!Promise<FileSystemFileHandle>} Handle to the new file.
+ *
+ * @category File System
  */
 export function getNewFileHandle(): Promise<FileSystemFileHandle> {
     // For Chrome 86 and later...
@@ -63,6 +67,8 @@ export function getNewFileHandle(): Promise<FileSystemFileHandle> {
  *
  * @param {File} file
  * @return {!Promise<string>} A promise that resolves to the parsed string.
+ *
+ * @category File System
  */
 export function readFile(file: File): Promise<string> {
     // If the new .text() reader is available, use it.
@@ -79,6 +85,8 @@ export function readFile(file: File): Promise<string> {
  * @private
  * @param {File} file
  * @return {Promise<string>} A promise that resolves to the parsed string.
+ *
+ * @category File System
  */
 function _readFileLegacy(file: File): Promise<string> {
     return new Promise((resolve) => {
@@ -96,6 +104,8 @@ function _readFileLegacy(file: File): Promise<string> {
  *
  * @param {FileSystemFileHandle} fileHandle File handle to write to.
  * @param {string} contents Contents to write.
+ *
+ * @category File System
  */
 export async function writeFile(fileHandle: FileSystemFileHandle, contents: FileSystemWriteChunkType) {
     // Support for Chrome 82 and earlier.
@@ -124,6 +134,8 @@ export async function writeFile(fileHandle: FileSystemFileHandle, contents: File
  * @param fileHandle File handle to check.
  * @param withWrite True if write permission should be checked.
  * @return True if the user has granted read/write permission.
+ *
+ * @category File System
  */
 export async function verifyPermission(fileHandle: FileSystemFileHandle, withWrite: boolean) {
     const opts: any = {}

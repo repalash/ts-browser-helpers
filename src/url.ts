@@ -38,6 +38,8 @@ export function setUrlQueryParam(p: string, v: string|null, reload = false) { //
  * Join path parts with separator. Similar to PHP's pathJoin
  * @param parts - path parts
  * @param separator - separator, default '/'
+ *
+ * @category URL
  */
 export function pathJoin(parts: string[], separator: string = '/'): string {
     // const replace = new RegExp(separator + '{1,}', 'g')
@@ -49,6 +51,8 @@ export function pathJoin(parts: string[], separator: string = '/'): string {
  * https://stackoverflow.com/questions/21913673/execute-web-worker-from-different-origin
  * @param url - URL to the worker js file
  * @param wasmURL - optional wasm file URL, will be passed to a created Module.locateFile (for emscripten)
+ *
+ * @category URL
  */
 export function remoteWorkerURL(url: string, wasmURL?: string) {
     const content = (wasmURL ? `var Module = { locateFile: function(s) { return "${ wasmURL }"; } }; \n` : '')

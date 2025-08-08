@@ -1,41 +1,69 @@
-/*!
- * Fork Of -
- * JavaScript Undo Manager 1.0.0
- * Simple JavaScript undo/redo command manager supporting transactions with no dependencies.
+/**
+ * JSUndoManagerOptions interface that defines the options for the JSUndoManager class.
  *
- * Copyright: Alexey Grinko, 2017
- * Git repository: https://github.com/agrinko/js-undo-manager.git
- *
- * @license MIT - https://opensource.org/licenses/MIT
- *
- * Changes -
- * 1. Added presets commands
- * 2. Port to TypeScript
- * 3. Remove transactions
+ * @category Undo
  */
-
-/////////// SOURCE CODE ///////////////
-
 export interface JSUndoManagerOptions{
+    /**
+     * Maximum commands stack size.
+     */
     limit: number;
+    /**
+     * Whether to emit execution status in console.
+     */
     debug: boolean;
+    /**
+     * Whether to bind "undo" and "redo" commands to "Ctrl+Z", "Ctrl+Y" & "Ctrl+Shift+Z" hot keys in the DOM
+     */
     bindHotKeys: boolean;
+    /**
+     * Root element for hot keys binding.
+     */
     hotKeyRoot?: HTMLElement;
     // useTransactions: boolean;
 }
+
+/**
+ * Simple command interface for JSUndoManager with explicit actions
+ *
+ * This is used for commands that are executed immediately and have no type field.
+ *
+ * @category Undo
+ */
 export type JSUndoManagerCommand1 = {
     redo: Function;
     undo: Function;
 }
+/**
+ * Command interface for JSUndoManager with a type field.
+ *
+ * This is used for commands that can be preset or predefined, allowing for easier management of commands.
+ *
+ * @category Undo
+ */
 export type JSUndoManagerCommand2 = {
     type: string,
     // [key: string]: any
 }
+
+/**
+ * Combined command type for JSUndoManager that can be either a simple command or a preset command.
+ *
+ * @category Undo
+ */
 export type JSUndoManagerCommand = JSUndoManagerCommand1 | JSUndoManagerCommand2
 
 /**
- * Main class
+ * Simple JavaScript undo/redo command manager supporting transactions with no dependencies.
+ *
+ * Fork Of JavaScript Undo Manager 1.0.0, by Alexey Grinko, licensed under MIT License.
+ *
+ * Changes -
+ * 1. Added presets commands
+ * 2. Port to TypeScript
+ * 3. Remove transactions, see {@link SetValueUndoCommand} for a replacement
  * @class JSUndoManager
+ * @category Undo
  */
 export class JSUndoManager {
     limit: number;
@@ -49,6 +77,14 @@ export class JSUndoManager {
     stack: JSUndoManagerCommand[];
     sp: number;
     // transaction: TransactionManager;
+    /**
+     * Presets for commands, allows to define command types and their handlers.
+     * A preset maps from a JSUndoManagerCommand2 to a JSUndoManagerCommand1.
+     *
+     * To add a preset, simply set it on this object, or using `Object.assign`.
+     *
+     * @type {Record<string, (c: JSUndoManagerCommand2)=>JSUndoManagerCommand1>}
+     */
     presets: Record<string, (c: JSUndoManagerCommand2)=>JSUndoManagerCommand1> = {}
 
     constructor(options: JSUndoManagerOptions) {
@@ -83,6 +119,9 @@ export class JSUndoManager {
         return this;
     }
 
+    /**
+     * Removes the event listeners and clears the stack
+     */
     dispose() {
         const elem = this.options.hotKeyRoot??document
         elem.removeEventListener("keydown", this._keyDown);
@@ -392,20 +431,3 @@ export class JSUndoManager {
 // TransactionManager.PENDING = 0;
 // TransactionManager.IN_PROGRESS = 1;
 //
-// /////////// SOURCE CODE END ///////////////
-//
-// // HELPER FUNCTIONS
-// /**
-//  * Emulate ES6 Object.assign behaviour if native function is not defined
-//  */
-// let assign = Object.assign || function (target) {
-//     for (let i = 1; i < arguments.length; i++) {
-//         for (let key in arguments[i]) {
-//             if (arguments[i].hasOwnProperty(key)) {
-//                 target[key] = arguments[i][key];
-//             }
-//         }
-//     }
-//
-//     return target;
-// };
