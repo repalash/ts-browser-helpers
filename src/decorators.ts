@@ -79,6 +79,20 @@ export function onChange3<TTarget = any>(
 }
 
 /**
+ * Type of the event dispatched by {@link onChangeDispatchEvent}.
+ *
+ * @category Decorators
+ */
+export interface OnChangeDispatchEventType<T = any>{
+    // type: string  // like property-changed
+    detail: {
+        key: keyof T
+        value: T
+        oldValue: T
+    }
+}
+
+/**
  * Similar to onChange but dispatches an event instead of calling a function.
  * Requires `dispatchEvent` to be defined on the target.
  * @param eventName - The name of the event to dispatch. Default: '`key`-changed'
@@ -126,3 +140,4 @@ export function serializable(id: string) {
         return constructor
     }
 }
+
