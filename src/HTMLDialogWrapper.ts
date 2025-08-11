@@ -1,21 +1,8 @@
 import {IDialogWrapper} from './DialogWrapper'
 import cssTemplate from './HTMLDialogWrapper.css?inline'
+import {escapeHtml} from "./text";
 
 let styleElement: HTMLStyleElement | null = null
-
-// Utility to escape HTML special characters
-function escapeHtml(str: string) {
-    return str.replace(/[&<>"']/g, function (m) {
-        switch (m) {
-            case '&': return '&amp;';
-            case '<': return '&lt;';
-            case '>': return '&gt;';
-            case '"': return '&quot;';
-            case "'": return '&#39;';
-            default: return m;
-        }
-    });
-}
 
 // Utility to auto-link URLs in text
 function linkify(text: string) {

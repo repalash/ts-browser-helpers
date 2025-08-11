@@ -60,10 +60,11 @@ export interface ActionUndoCommand<
     redo: ()=>any
     args: TA
     uid: TD
+    onUndoRedo?: (c: SetValueUndoCommand)=>void
 }
 
 /**
- * Records an undo command in the undo manager, supports merging of subsequent setValue commands
+ * Records an undo command in the undo manager, supports merging of subsequent setValue commands. See uiconfig.js or threepipe `UndoManagerPlugin` for usage.
  * @param um - the undo manager to record the command in, if undefined, or not enabled the command will not be recorded
  * @param com - the command to record, should be of type SetValueUndoCommand, ActionUndoCommand or JSUndoManagerCommand
  * @param setValueCommandType - command type for the setValue command, used to identify the command type for merging
@@ -97,7 +98,7 @@ export function recordUndoCommand<T extends SetValueUndoCommand|ActionUndoComman
 }
 
 /**
- * Sets a value in the target object with undo/redo support.
+ * Sets a value in the target object with undo/redo support. See uiconfig.js or threepipe `UndoManagerPlugin` for usage
  * @param um - the undo manager to record the command in, if undefined, or not enabled the command will not be recorded but the value will still be set.
  * @param binding - a tuple of target object and key to set the value on
  * @param value - the value to set

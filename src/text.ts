@@ -65,7 +65,10 @@ export function getFilenameFromPath(url: string) {
  * @category Text
  */
 export function escapeRegExp(str: string) {
-    return str.replace(/([.*+?^=!:${}()|[\]/\\])/g, '\\$1')
+    // @ts-expect-error new browser feature
+    return RegExp.escape ? RegExp.escape(str) :
+    //     str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
+        str.replace(/[.*+?^${}()|[\]/\\]=!:/g, '\\$&')
 }
 
 /**
@@ -130,4 +133,23 @@ export function longestCommonPrefix(words: string[]): string {
             .at(0) // returns the first part
         || ''
     )
+}
+
+/**
+ * Escape HTML special characters in a string
+ * @param str
+ *
+ * @category Text
+ */
+export function escapeHtml(str: string) {
+    return str.replace(/[&<>"']/g, function (m) {
+        switch (m) {
+            case '&': return '&amp;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '"': return '&quot;';
+            case "'": return '&#39;';
+            default: return m;
+        }
+    });
 }

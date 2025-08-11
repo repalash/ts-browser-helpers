@@ -11,7 +11,7 @@ export {SimpleEventDispatcher} from './EventDispatcher'
 
 export {createCanvasElement, createDiv, createImage, createStyles, createScriptFromURL, cloneScriptTag, setInnerHTMLWithScripts} from './dom'
 export {TYPED_ARRAYS, arrayBufferToBase64, base64ToArrayBuffer, getTypedArray} from './arrayBuffer'
-export {escapeRegExp, getFilenameFromPath, parseFileExtension, replaceAll, toTitleCase, longestCommonPrefix, toCamelCase, safeReplaceString} from './text'
+export {escapeRegExp, getFilenameFromPath, parseFileExtension, replaceAll, toTitleCase, longestCommonPrefix, toCamelCase, safeReplaceString, escapeHtml} from './text'
 export {prettyScrollbar} from './styles'
 export {blobToDataURL, downloadBlob, downloadFile, uploadFile, mobileAndTabletCheck} from './browser'
 export {LinearToSRGB, SRGBToLinear, colorToDataUrl} from './color'

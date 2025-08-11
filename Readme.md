@@ -195,6 +195,7 @@ npm install ts-browser-helpers
 
 | Function                                                                                     | Description                                                                                                                                   |
 |----------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| [escapeHtml](https://repalash.com/ts-browser-helpers/functions/escapeHtml.md)                | Escape HTML special characters in a string                                                                                                    |
 | [escapeRegExp](https://repalash.com/ts-browser-helpers/functions/escapeRegExp)               | Escape a string for use in a regular expression                                                                                               |
 | [getFilenameFromPath](https://repalash.com/ts-browser-helpers/functions/getFilenameFromPath) | Get the filename from a path, similar to PHP's basename()                                                                                     |
 | [longestCommonPrefix](https://repalash.com/ts-browser-helpers/functions/longestCommonPrefix) | Find the longest common prefix in an array of strings https://stackoverflow.com/questions/68702774/longest-common-prefix-in-javascript        |
