@@ -67,8 +67,7 @@ export function getFilenameFromPath(url: string) {
 export function escapeRegExp(str: string) {
     // @ts-expect-error new browser feature
     return RegExp.escape ? RegExp.escape(str) :
-    //     str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
-        str.replace(/[.*+?^${}()|[\]/\\]=!:/g, '\\$&')
+        str.replace(/[.*+?^${}()|[\]/\\=!:]/g, '\\$&') // $& means the whole matched string
 }
 
 /**
