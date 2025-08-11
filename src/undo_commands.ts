@@ -60,7 +60,7 @@ export interface ActionUndoCommand<
     redo: ()=>any
     args: TA
     uid: TD
-    onUndoRedo?: (c: SetValueUndoCommand)=>void
+    onUndoRedo?: (c: ActionUndoCommand)=>void
 }
 
 /**
