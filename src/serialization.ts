@@ -201,17 +201,25 @@ export class Serialization{
         if (data && typeof data === 'object') {
             // if data is deserialized already and obj is null. then should we clone the data or assign it directly?
             // if it's a resource from meta then assign it directly(done above), otherwise clone (done just below).
-            if (data.serializableClassId && (!obj || obj.serializableClassId !==data.serializableClassId) ) { // if the data is already deserialized, it will be cloned
-                const constructor = Serialization.SerializableClasses.get(data.serializableClassId)
+            const construct = (classId: string)=>{
+                const constructor = Serialization.SerializableClasses.get(classId)
                 if (constructor) {
                     if (constructor.DataInConstructor) // not used anywhere right now. todo: remove? because we are anyway assigning the data to the object after the constructor using @serialize and support fromJSON
                         obj = new constructor(data)
                     else obj = new constructor()
                 }
-            } else if ((data.constructor||Object) === Object && !obj) {
-                obj = {}
-            } else if (Array.isArray(data) && !obj) {
+            }
+
+            if (data.serializableClassId && (!obj || obj.serializableClassId !==data.serializableClassId) ) { // if the data is already deserialized, it will be cloned
+                construct(data.serializableClassId)
+            }
+            if (data.type && (!obj || obj.type !== data.type) ) { // if the data is already deserialized, it will be cloned
+                construct(data.type)
+            }
+            if (!Array.isArray(obj) && Array.isArray(data) ) {
                 obj = []
+            }else if (typeof obj !== 'object' && (data.constructor||Object) === Object) {
+                obj = {}
             }
         }
         if (typeof obj === 'function') {
