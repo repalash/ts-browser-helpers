@@ -148,12 +148,12 @@ export class Serialization{
         if(data && typeof data === 'object' && (data.constructor||Object) === Object && data.resource && typeof data.resource === 'string' && data.uuid){
             const res = meta?.[data.resource]
             if (!res) {
-                console.warn(`Resource ${data.resource} not found`)
+                console.warn(`Serialization: Resource ${data.resource} not found`)
                 return obj
             }
             const resData = res[data.uuid]
             if (!resData) {
-                console.warn(`Resource ${data.resource} with uuid ${data.uuid} not found`)
+                console.warn(`Serialization: Resource ${data.resource} with uuid ${data.uuid} not found`)
                 return obj
             }
             data = resData
@@ -175,12 +175,12 @@ export class Serialization{
                         // for materials, if uuid is same and type is same it should be copied otherwise replaced
                         // for vector3d, copy data
                         // todo: need to implement.
-                        console.warn("replacing object", obj, 'with deserialized object from meta', data)
+                        console.warn('Serialization: replacing object', obj, 'with deserialized object', data)
                         return data;
                     }
                 } else { // data is not deserialized, or is a normal object
                     // this is not supported. meta should only have class instances, not js objects
-                    console.error('Deserialize; meta should only have class instances, not js objects', data, obj, meta)
+                    console.error('Serialization: during Deserialize, meta should only have class instances, not js objects', data, obj, meta)
                     if (!obj) {
                         // continue deserializing and return deserialized - done
                     } else {
@@ -192,7 +192,7 @@ export class Serialization{
         if(data && typeof data === 'object' && (data.constructor||Object) !== Object && !Array.isArray(data) && !data.serializableClassId){
             if(data instanceof Blob) return data // todo special check for Blob/File
 
-            console.warn('Data might already be deserialized. It will be cloned, or copied to source', data, "source", obj, data.constructor, data.constructor !== Object)
+            console.warn('Serialization: Data might already be deserialized. It will be cloned, or copied to source', data, "source", obj, data.constructor, data.constructor !== Object)
         }
 
         // todo handle File/Blob and FS API descriptors (try loading SheenChair.glb from three,js in threepipe)
@@ -223,8 +223,8 @@ export class Serialization{
             }
         }
         if (typeof obj === 'function') {
-            console.error('cannot deserialize a function', obj, data)
-            return obj // throw error maybe?}
+            console.error('Serialization: Cannot deserialize into a function', obj, data)
+            return obj // throw error maybe?
         }
 
         if(!isThis) {
