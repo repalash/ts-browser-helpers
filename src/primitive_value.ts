@@ -48,7 +48,9 @@ export function clonePrimitive<T extends PrimitiveVal>(a: T): T {
  * @category Primitive
  */
 export function equalsPrimitive<T extends PrimitiveVal>(a: T, b: T): boolean {
-    if (a === null || typeof a !== 'object') return a === b
+    if (a === null || typeof a !== 'object' ||
+        b === null || typeof b !== 'object'
+    ) return a === b
     if (Array.isArray(a)) return Array.isArray(b) && a.length === b.length && a.every((v, i)=>equalsPrimitive(v, b[i]))
     if (!a._ui_isPrimitive && typeof a.equals === 'function' && a._ui_primitiveEquals !== false) return !!a.equals(b)
     // direct equality check in case of objects
