@@ -11,10 +11,12 @@ export interface Serializer{
     deserialize: (data: any, obj: any, meta?: any) => any // todo: handle when data is already deserialized for Texture, Material etc
     isType: (obj: any) => boolean
     priority?: number // lower priority serializers are checked first
+    type?: string
 }
 
 const objSerializer: Serializer = { // object
     priority: Infinity,
+    type: 'Object',
     serialize: (obj: any, meta?: any)=> objectMap2(obj, ([k, v]) => [k, Serialization.Serialize(v, meta, false)]),
     deserialize: (data: any, obj: any, meta: any)=>
         Object.assign(obj||{}, objectMap2(data, ([k, v]) => [k, Serialization.Deserialize(v, obj?.[k], meta, false)])),
@@ -26,7 +28,7 @@ const objSerializer: Serializer = { // object
  * @category Serialization
  */
 export class Serialization{
-    static TypeMap = new Map<ObjectConstructor, [string, string][]>()
+    static TypeMap = new WeakMap<ObjectConstructor, [string, string][]>()
     static SerializableClasses = new Map<string, any>()
 
     /**
@@ -35,6 +37,7 @@ export class Serialization{
     static Serializers: Serializer[] = [
         { // arrays
             priority: 0,
+            type: 'Array',
             isType: (obj: any) => Array.isArray(obj),
             serialize: (obj: any, meta?: any)=> obj.map((v: any) => Serialization.Serialize(v, meta, false)),
             deserialize: (data: any, obj: any, meta: any)=>{
@@ -151,9 +154,10 @@ export class Serialization{
                 console.warn(`Serialization: Resource ${data.resource} not found`)
                 return obj
             }
-            const resData = res[data.uuid]
+            const dataUuid = data.uuid
+            const resData = res[dataUuid]
             if (!resData) {
-                console.warn(`Serialization: Resource ${data.resource} with uuid ${data.uuid} not found`)
+                console.warn(`Serialization: Resource ${data.resource} with uuid ${dataUuid} not found`)
                 return obj
             }
             data = resData
@@ -174,8 +178,30 @@ export class Serialization{
                         // for textures, it should be replaced. should we copy if uuid is same?
                         // for materials, if uuid is same and type is same it should be copied otherwise replaced
                         // for vector3d, copy data
-                        // todo: need to implement.
-                        console.warn('Serialization: replacing object', obj, 'with deserialized object', data)
+
+                        if(obj.uuid && obj.uuid === dataUuid) {
+                            // same uuid, ideally this shouldn't happe, as it should be the same object
+                            // but if it does, we should warn and copy the data, unless opted out
+                            // todo copy based on type even if copyOnDeserialize is not set
+                            // if(obj.copyOnDeserialize !== false && typeof obj.copy === 'function'){
+                            //     obj.copy(data)
+                            //     return obj
+                            // }
+                            if(typeof obj.copy === 'function' && obj.copyOnDeserialize === true){
+                                obj.copy(data)
+                                return obj
+                            }else {
+                                console.warn('Serialization: replacing object', obj, 'with deserialized resource', data)
+                            }
+                        }else if(!obj.uuid){ // it's possible that data has uuid(after serialization) but not the object.
+                            // no uuid, copy should be opt-in
+                            if(typeof obj.copy === 'function' && obj.copyOnDeserialize === true){
+                                obj.copy(data)
+                                return obj
+                            }
+                        }else {
+                            // uuid is different, we can just return the new object which will be replaced, as it was referenced by uuid in the json
+                        }
                         return data;
                     }
                 } else { // data is not deserialized, or is a normal object
