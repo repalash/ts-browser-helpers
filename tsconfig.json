@@ -20,6 +20,7 @@
         "emitDecoratorMetadata": true,
         "sourceMap": true,
         "target": "es2018",
+        "noEmit": true,
         "strictNullChecks": true,
         "lib": [
             "es5",

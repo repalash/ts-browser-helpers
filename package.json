@@ -1,6 +1,6 @@
 {
   "name": "ts-browser-helpers",
-  "version": "0.19.4",
+  "version": "0.20.0",
   "description": "A collection of utility classes, functions and decorators for javascript/typescript projects, for use in the browser.",
   "main": "dist/bundle.esm.js",
   "module": "dist/bundle.esm.js",
@@ -10,7 +10,7 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build": "rimraf dist ; vite build",
+    "build": "rimraf dist ; tsc && vite build",
     "dev": "NODE_ENV=development vite build --watch",
     "serve-docs": "ws -d docs -p 8080",
     "test": "npm run check",
@@ -22,7 +22,7 @@
     "check": "tsc -p tsconfig.json --noEmit",
 
     "new:pack": "npm run prepare && clean-package && npm pack && clean-package restore",
-    "new:publish": "git diff --exit-code --name-only HEAD * && npm run prepare && clean-package && npm publish && clean-package restore && git tag v$npm_package_version"
+    "new:publish": "git diff --exit-code --name-only HEAD * && npm run prepare && clean-package && PKG=$(npm pack) && clean-package restore && npm publish \"$PKG\" && git tag v$npm_package_version"
   },
   "exports": {
     ".": {
