@@ -116,7 +116,7 @@ export interface IDisposable {
  * @category Type
  */
 export interface IJSONSerializable<T=any, TM=any> {
-    toJSON(meta?: TM): T;
-    fromJSON(data: T, meta?: TM): this|null|Promise<this|null>;
+    toJSON(meta?: TM, _internal?: boolean): T;
+    fromJSON(data: T, meta?: TM, _internal?: boolean): this|null|Promise<this|null>;
 }
 
