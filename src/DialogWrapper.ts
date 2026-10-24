@@ -35,7 +35,9 @@ export const windowDialogWrapper: IDialogWrapper = {
     choose: async(message, options) => {
         if (!options?.length) return null
         const list = options.map((o, i) => `${i + 1}. ${o.text}`).join('\n')
-        const ans = window.prompt(`${message ?? ''}\n\n${list}\n\nEnter number:`, '1')
+        // the default answer is the primary option, as in htmlDialogWrapper (else the first one)
+        const primary = Math.max(0, options.findIndex(o => o.primary))
+        const ans = window.prompt(`${message ?? ''}\n\n${list}\n\nEnter number:`, String(primary + 1))
         if (ans === null) return null
         const idx = parseInt(ans.trim(), 10) - 1
         return options[idx]?.id ?? null
