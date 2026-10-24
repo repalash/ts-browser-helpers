@@ -30,7 +30,7 @@ export {pathJoin, getUrlQueryParam, setUrlQueryParam, remoteWorkerURL} from './u
 export {css, glsl, html, svgUrl} from './template-literals'
 export {Serialization} from './serialization'
 export {FnCaller} from './fnCaller'
-export {windowDialogWrapper, type IDialogWrapper} from './DialogWrapper'
+export {windowDialogWrapper, type IDialogWrapper, type IDialogChooseOption} from './DialogWrapper'
 export {htmlDialogWrapper} from './HTMLDialogWrapper'
 export {equalsPrimitive, copyPrimitive, clonePrimitive, type PrimitiveValObject, type PrimitiveVal} from './primitive_value'
 export {recordUndoCommand, setValueUndoCommand} from './undo_commands'

@@ -1,4 +1,4 @@
-import {IDialogWrapper} from './DialogWrapper'
+import {IDialogChooseOption, IDialogWrapper} from './DialogWrapper'
 import cssTemplate from './HTMLDialogWrapper.css?inline'
 import {escapeHtml} from "./text";
 
@@ -72,6 +72,23 @@ const promptTemplate = (props: {
 <div class="dialog-footer">
     ${props.cancel && `<button class="dialog-button dialog-cancel">${escapeHtml(props.cancel)}</button>` || ''}
     ${props.ok && `<button class="dialog-button dialog-ok">${escapeHtml(props.ok)}</button>` || ''}
+</div>
+`
+
+const chooseTemplate = (props: {
+    title?: string
+    message: string
+    options: IDialogChooseOption[]
+}) => `
+<div class="dialog-content">
+${titleMessage(props)}
+</div>
+<div class="dialog-footer">
+    ${props.options.map((o, i) => `
+        <button class="dialog-button${o.primary ? ' dialog-ok' : ''}" data-i="${i}">
+            ${escapeHtml(o.text)}
+        </button>
+    `).join('')}
 </div>
 `
 
@@ -195,4 +212,39 @@ export const htmlDialogWrapper: IDialogWrapper = {
         })
     },
     confirmSync: (message?: string) => window.confirm(message),
+    choose: async(message?: string, options?: IDialogChooseOption[]) => {
+        const opts = options ?? []
+        if (!opts.length) return null
+        const dialog = createDialogElement(chooseTemplate, {
+            message: message || 'Choose an option',
+            options: opts,
+        })
+
+        return new Promise<string | null>((resolve) => {
+            const buttons = Array.from(
+                dialog.querySelectorAll<HTMLButtonElement>('.dialog-button')
+            )
+            const primaryIdx = Math.max(0, opts.findIndex(o => o.primary))
+            const keydown = (event: KeyboardEvent) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault()
+                    buttons[primaryIdx]?.click()
+                } else if (event.key === 'Escape') {
+                    event.preventDefault()
+                    remove()
+                    resolve(null)
+                }
+            }
+            const remove = () => {
+                window.removeEventListener('keydown', keydown)
+                document.body.removeChild(dialog)
+            }
+            window.addEventListener('keydown', keydown)
+            buttons.forEach((b, i) => b.addEventListener('click', () => {
+                remove()
+                resolve(opts[i].id)
+            }))
+            buttons[primaryIdx]?.focus()
+        })
+    },
 }
