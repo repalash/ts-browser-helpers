@@ -11,10 +11,10 @@ on:
 permissions:
   contents: read
 
-# A newer push replaces a run that waits for approval.
+# Runs queue: a newer push waits; a running publish is never cancelled.
 concurrency:
   group: publish
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   release:
