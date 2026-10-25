@@ -1,35 +1,28 @@
+# .github/workflows/publish.yml of a single-package repository at the root.
+# Builds with `npm ci` (the prepare script builds) and tests; packs with clean-package.
+# Tags: publish@<version>.
 name: Publish to npm
 
-# Push a tag publish@<version> (the version in package.json) to publish it, e.g.:
-#   git tag publish@0.21.0 && git push origin publish@0.21.0
-# Uses npm trusted publishing (OIDC); same steps as `npm run new:publish`.
 on:
-    push:
-        tags:
-            - 'publish@*'
+  push:
+    branches: [master]
+  workflow_dispatch:
 
 permissions:
-    contents: read
-    id-token: write
+  contents: read
+
+# Runs queue: a newer push waits; a running publish is never cancelled.
+concurrency:
+  group: publish
+  cancel-in-progress: false
 
 jobs:
-    publish:
-        runs-on: ubuntu-latest
-        environment: npm-publish
-        steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 24
-                  registry-url: 'https://registry.npmjs.org'
-            - name: Install and build (prepare runs build and docs)
-              run: npm ci
-            - name: The tag matches package.json
-              run: test "publish@$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
-            - run: npm test
-            - name: Pack the cleaned package and publish it
-              run: |
-                  ./node_modules/.bin/clean-package
-                  PKG=$(npm pack --silent)
-                  ./node_modules/.bin/clean-package restore
-                  npm publish "$PKG" --provenance --access public
+  release:
+    permissions:
+      contents: write # tags
+      id-token: write # npm trusted publishing
+    uses: repalash/release-tools/.github/workflows/npm-release.yml@v1
+    with:
+      build: npm ci && npm test
+      clean-package: true
+    secrets: inherit
