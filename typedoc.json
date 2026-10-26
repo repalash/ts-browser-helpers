@@ -1,5 +1,6 @@
 {
   "out": "docs",
+  "hostedBaseUrl": "https://repalash.com/ts-browser-helpers/",
   "entryPoints": [
     "src/index.ts"
   ],
