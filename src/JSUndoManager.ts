@@ -33,6 +33,8 @@ export interface JSUndoManagerOptions{
 export type JSUndoManagerCommand1 = {
     redo: Function;
     undo: Function;
+    /** What the step is called in an undo history, e.g. `Move`, `Extrude`. Optional. */
+    label?: string;
 }
 /**
  * Command interface for JSUndoManager with a type field.
@@ -43,6 +45,8 @@ export type JSUndoManagerCommand1 = {
  */
 export type JSUndoManagerCommand2 = {
     type: string,
+    /** What the step is called in an undo history. Optional; a preset may also supply one. */
+    label?: string,
     // [key: string]: any
 }
 
@@ -52,6 +56,20 @@ export type JSUndoManagerCommand2 = {
  * @category Undo
  */
 export type JSUndoManagerCommand = JSUndoManagerCommand1 | JSUndoManagerCommand2
+
+/**
+ * What changed in a {@link JSUndoManager}, passed to listeners added with
+ * {@link JSUndoManager.addChangeListener}.
+ *
+ * @category Undo
+ */
+export interface JSUndoManagerChangeEvent {
+    /** What happened to the stack. */
+    action: 'record' | 'undo' | 'redo' | 'replace' | 'reset' | 'limit' | 'enabled'
+    manager: JSUndoManager
+    /** The command recorded, undone, redone or put in by `replaceLast`, when there is one. */
+    command?: JSUndoManagerCommand
+}
 
 /**
  * Simple JavaScript undo/redo command manager supporting transactions with no dependencies.
@@ -73,7 +91,19 @@ export class JSUndoManager {
         bindHotKeys: false,     // whether to bind "undo" and "redo" commands to "Ctrl+Z", "Ctrl+Y" & "Ctrl+Shift+Z" hot keys
         // useTransactions: true   // whether to initialize transactions manager
     }
-    enabled = true;
+    private _enabled = true;
+
+    /** When false, nothing is recorded, undone or redone. */
+    get enabled(): boolean {
+        return this._enabled
+    }
+
+    set enabled(value: boolean) {
+        if (value === this._enabled) return
+        this._enabled = value
+        this._changed('enabled')
+    }
+
     stack: JSUndoManagerCommand[];
     sp: number;
     // transaction: TransactionManager;
@@ -86,6 +116,48 @@ export class JSUndoManager {
      * @type {Record<string, (c: JSUndoManagerCommand2)=>JSUndoManagerCommand1>}
      */
     presets: Record<string, (c: JSUndoManagerCommand2)=>JSUndoManagerCommand1> = {}
+
+    private _changeListeners = new Set<(e: JSUndoManagerChangeEvent) => void>()
+
+    /**
+     * Be told whenever the stack changes: a step recorded, undone, redone or replaced, the stack reset,
+     * the limit changed, or the manager enabled/disabled. An undo history list or a menu's enabled state
+     * listens here instead of polling `stack` and `sp`.
+     * @returns a function that removes the listener
+     */
+    addChangeListener(listener: (e: JSUndoManagerChangeEvent) => void): () => void {
+        this._changeListeners.add(listener)
+        return () => this.removeChangeListener(listener)
+    }
+
+    removeChangeListener(listener: (e: JSUndoManagerChangeEvent) => void): void {
+        this._changeListeners.delete(listener)
+    }
+
+    private _changed(action: JSUndoManagerChangeEvent['action'], command?: JSUndoManagerCommand): void {
+        if (!this._changeListeners) return // during construction
+        for (const listener of [...this._changeListeners]) {
+            try {
+                listener({action, manager: this, command})
+            } catch (e) {
+                console.error('JSUndoManager: a change listener threw', e)
+            }
+        }
+    }
+
+    /**
+     * The label of a command: its own `label`, or for a preset command the label of what the preset
+     * makes of it.
+     */
+    labelOf(command: JSUndoManagerCommand | null | undefined): string | undefined {
+        if (!command) return undefined
+        if (command.label !== undefined) return command.label
+        if ((command as JSUndoManagerCommand2).type) {
+            const p = this.presets[(command as JSUndoManagerCommand2).type]
+            return typeof p === 'function' ? p(command as JSUndoManagerCommand2).label : undefined
+        }
+        return undefined
+    }
 
     constructor(options: JSUndoManagerOptions) {
         Object.assign(this.options, options);
@@ -156,6 +228,7 @@ export class JSUndoManager {
         this.log('replace', last, 'with', command)
 
         this.stack[this.sp] = command
+        this._changed('replace', command)
 
         return this
     }
@@ -169,13 +242,14 @@ export class JSUndoManager {
     execute(command: JSUndoManagerCommand) {
         if(!this.enabled) return
 
-        let command1 = this._rc(command);
-        let doFunction = command1.redo;
+        const command1 = this._rc(command);
 
-        this.record.apply(this, command1);
+        // Record the command itself. This used to be `this.record.apply(this, command1)`, which passed the
+        // command object as the argument list, so `record` received `undefined` and pushed it onto the stack.
+        this.record(command);
 
         this.log("Executing function...");
-        doFunction.apply(command);
+        command1.redo.apply(command1);
 
         return this;
     }
@@ -206,6 +280,7 @@ export class JSUndoManager {
         this.sp++;
 
         this._keepLimit();
+        this._changed('record', command);
     }
 
     //forget "future" commands if stack pointer is not at the end
@@ -246,6 +321,7 @@ export class JSUndoManager {
         this.sp--;
 
         this._rc(command).undo();
+        this._changed('undo', command);
 
         return this;
     }
@@ -280,6 +356,7 @@ export class JSUndoManager {
         this.sp++;
 
         this._rc(command).redo();
+        this._changed('redo', command);
 
         return this;
     }
@@ -314,6 +391,7 @@ export class JSUndoManager {
         } else {
             this.limit = Math.floor(limit);
             this._keepLimit();
+            this._changed('limit');
         }
 
         return this;
@@ -326,6 +404,7 @@ export class JSUndoManager {
         this.log("reset");
         this.stack = [];
         this.sp = -1;
+        this._changed('reset');
         return this;
     }
 
