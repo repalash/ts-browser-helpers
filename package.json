@@ -78,6 +78,7 @@
   "devDependencies": {
     "@rollup/plugin-json": "^5.0.1",
     "clean-package": "^2.2.0",
+    "dts-js-extensions": "^0.1.0",
     "rollup-plugin-license": "^3.0.1",
     "typedoc": "^0.27.5",
     "typescript": "^5.7.2",
