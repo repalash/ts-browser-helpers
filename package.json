@@ -1,6 +1,6 @@
 {
   "name": "ts-browser-helpers",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "description": "A collection of utility classes, functions and decorators for javascript/typescript projects, for use in the browser.",
   "main": "dist/bundle.esm.js",
   "module": "dist/bundle.esm.js",
@@ -14,13 +14,11 @@
     "dev": "NODE_ENV=development vite build --watch",
     "serve-docs": "ws -d docs -p 8080",
     "test": "npm run check",
-
     "docs": "rimraf docs ; npx typedoc --readme none ./src/index.ts",
     "docs-mk": "rimraf docs ; npx typedoc --readme none --plugin typedoc-plugin-markdown ./src/index.ts --indexFormat table",
     "prepare": "npm run build && npm run docs",
     "prepublishOnly": "npm run test",
     "check": "tsc -p tsconfig.json --noEmit",
-
     "new:pack": "npm run prepare && clean-package && npm pack && clean-package restore",
     "new:publish": "git diff --exit-code --name-only HEAD * && npm run prepare && clean-package && PKG=$(npm pack) && clean-package restore && npm publish \"$PKG\" && git tag v$npm_package_version"
   },

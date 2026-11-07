@@ -1,4 +1,4 @@
-import {IDialogChooseOption, IDialogWrapper} from './DialogWrapper'
+import {IDialogChooseOption, IDialogToastOptions, IDialogWrapper} from './DialogWrapper'
 import cssTemplate from './HTMLDialogWrapper.css?inline'
 import {escapeHtml} from "./text";
 
@@ -111,8 +111,46 @@ function createDialogElement<T extends {title?: string, message: string}>(templa
     return dialog
 }
 
+/** The most toasts in a container at a time; a new one takes out the oldest */
+const MAX_TOASTS = 3
+/** The element of the toasts of each container */
+const toastHosts = new WeakMap<HTMLElement, HTMLDivElement>()
+
+function toastHost(container: HTMLElement) {
+    let host = toastHosts.get(container)
+    if (!host || !host.isConnected) {
+        host = document.createElement('div')
+        host.className = 'dialog-toasts'
+        // fixed on the page, at the top of the element in another one
+        if (container !== document.body) host.classList.add('dialog-toasts-in')
+        host.setAttribute('aria-live', 'polite')
+        container.appendChild(host)
+        toastHosts.set(container, host)
+    }
+    return host
+}
+
+function showToast(message: string, {kind = 'info', duration, container = document.body}: IDialogToastOptions = {}) {
+    setupStyle()
+    const host = toastHost(container)
+    const toast = document.createElement('div')
+    toast.className = 'dialog-toast dialog-toast-' + kind
+    toast.textContent = message
+    if (kind === 'error') toast.setAttribute('role', 'alert')
+    let timer = 0
+    const remove = () => {
+        window.clearTimeout(timer)
+        toast.remove()
+    }
+    toast.addEventListener('click', remove)
+    host.appendChild(toast)
+    const time = duration ?? 4000 * (kind === 'error' ? 2 : 1)
+    if (time > 0) timer = window.setTimeout(remove, time)
+    while (host.children.length > MAX_TOASTS) (host.firstElementChild as HTMLElement | null)?.click()
+}
+
 /**
- * A custom dialog wrapper that uses HTML elements to create alert, prompt, and confirm dialogs inspired by radix/shadcn style. Provides API similar to the browser's built-in dialog methods, with better UI and more options.
+ * A custom dialog wrapper that uses HTML elements to create alert, prompt, confirm and choose dialogs, and toasts, inspired by radix/shadcn style. Provides API similar to the browser's built-in dialog methods, with better UI and more options.
  * @category Browser
  */
 export const htmlDialogWrapper: IDialogWrapper = {
@@ -247,4 +285,5 @@ export const htmlDialogWrapper: IDialogWrapper = {
             buttons[primaryIdx]?.focus()
         })
     },
+    toast: showToast,
 }
