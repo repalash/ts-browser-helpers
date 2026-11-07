@@ -115,6 +115,8 @@ function createDialogElement<T extends {title?: string, message: string}>(templa
 const MAX_TOASTS = 3
 /** The element of the toasts of each container */
 const toastHosts = new WeakMap<HTMLElement, HTMLDivElement>()
+/** The function that removes each toast (and stops its timer) */
+const toastRemovers = new WeakMap<Element, () => void>()
 
 function toastHost(container: HTMLElement) {
     let host = toastHosts.get(container)
@@ -143,10 +145,17 @@ function showToast(message: string, {kind = 'info', duration, container = docume
         toast.remove()
     }
     toast.addEventListener('click', remove)
+    toastRemovers.set(toast, remove)
     host.appendChild(toast)
     const time = duration ?? 4000 * (kind === 'error' ? 2 : 1)
     if (time > 0) timer = window.setTimeout(remove, time)
-    while (host.children.length > MAX_TOASTS) (host.firstElementChild as HTMLElement | null)?.click()
+    // not a click: it would reach the click listeners of the page
+    while (host.children.length > MAX_TOASTS) {
+        const old = host.firstElementChild!
+        const removeOld = toastRemovers.get(old)
+        if (removeOld) removeOld()
+        else old.remove()
+    }
 }
 
 /**
