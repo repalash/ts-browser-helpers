@@ -1,5 +1,5 @@
-/* the dialogs (htmlDialogWrapper alert, confirm, prompt, choose), in the colours of a Figma-like UI: a blue main button,
-   grey second buttons and field. They follow the light or dark mode of the system; an app
+/* the dialogs (htmlDialogWrapper alert, confirm, prompt, choose), in the colours and sizes of a Figma-like UI: a blue main
+   button, grey second buttons and field, compact (16px padding, 32px buttons, 13px text). They follow the light or dark mode of the system; an app
    sets these variables (on :root or body) to match its own theme; :where() makes these defaults lose to any app rule. */
 :where(:root) {
     --dialog-bg: #ffffff;
@@ -13,7 +13,7 @@
     --dialog-ring: #0d99ff;
     --dialog-link: #007be5;
     --dialog-backdrop: rgba(0, 0, 0, 0.25);
-    --dialog-radius: 12px;
+    --dialog-radius: 10px;
     --dialog-color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -43,14 +43,14 @@
     box-sizing: border-box;
     /* the width of the screen less 16px on each side, and less the notch and the home bar */
     width: calc(100% - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
-    max-width: 440px;
+    max-width: 380px;
     max-height: calc(100% - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     overflow: auto;
     overscroll-behavior: contain;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding: 24px;
+    gap: 12px;
+    padding: 16px;
     border: 1px solid var(--dialog-border);
     border-radius: var(--dialog-radius);
     color: var(--dialog-fg);
@@ -58,7 +58,7 @@
     /* the scroll bar, the caret and the autofill of the field in the same mode as the colours */
     color-scheme: var(--dialog-color-scheme);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-    font: 14px/1.45 Inter, -apple-system, "system-ui", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    font: 13px/1.45 Inter, -apple-system, "system-ui", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
     -webkit-text-size-adjust: 100%;
     animation: dialog-in .15s ease-out;
 }
@@ -78,11 +78,11 @@
 .dialog-content {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     text-align: center;
 }
 .dialog-title {
-    font-size: 17px;
+    font-size: 14px;
     font-weight: 600;
     line-height: 1.35;
     overflow-wrap: anywhere;
@@ -98,7 +98,7 @@
     flex-direction: column-reverse;
     gap: 8px;
 }
-@media (min-width: 480px) {
+@media (min-width: 420px) {
     .dialog-content {
         text-align: left;
     }
@@ -111,7 +111,7 @@
 
 .dialog-button, .dialog-input {
     box-sizing: border-box;
-    height: 36px;
+    height: 32px;
     border: 1px solid transparent;
     border-radius: 6px;
     font: inherit;
@@ -120,12 +120,11 @@
 }
 .dialog-input {
     width: 100%;
-    margin-top: 10px;
-    padding: 0 12px;
-    font-size: 16px; /* 16px: iOS does not zoom into the field */
+    margin-top: 8px;
+    padding: 0 10px;
 }
 .dialog-button {
-    padding: 0 16px;
+    padding: 0 12px;
     font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
@@ -150,10 +149,13 @@
     outline: 2px solid var(--dialog-ring);
     outline-offset: 2px;
 }
-/* a touch screen: buttons and the field of at least 44px */
+/* a touch screen: buttons and the field of at least 44px; the field text 16px, so iOS does not zoom into it */
 @media (pointer: coarse) {
     .dialog-button, .dialog-input {
         height: 44px;
+    }
+    .dialog-input {
+        font-size: 16px;
     }
 }
 @media (prefers-reduced-motion: reduce) {
