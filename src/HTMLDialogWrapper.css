@@ -1,5 +1,11 @@
+/* a modal <dialog> (showModal): the browser puts it in the top layer, over the whole page (z-index has no effect then);
+   the inset, margin and max-height of the browser's dialog:modal style are reset, so it stays centred by the transform */
 .dialog-container {
     position: fixed;
+    inset: auto;
+    margin: 0;
+    max-height: calc(100% - 32px);
+    overflow: auto;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -18,6 +24,11 @@
     box-sizing: border-box;
     font-family: Inter, -apple-system, "system-ui", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
     transition: max-width 0.5s, width 0.5s, height 0.5s;
+}
+
+/* the page behind the open dialog, the same in each browser */
+.dialog-container::backdrop {
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .dialog-content {

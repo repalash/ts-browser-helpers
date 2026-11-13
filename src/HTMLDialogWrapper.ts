@@ -99,16 +99,35 @@ function setupStyle() {
     document.head.appendChild(styleElement)
 }
 
+/**
+ * Makes the dialog and opens it as a modal `<dialog>` (`showModal`): the page behind it is inert, so it takes no focus
+ * and no click until the dialog closes. A key can still reach the page (the body, when it has the focus), so an app with
+ * key shortcuts checks `dialog:modal`. A browser without `showModal` shows it as a fixed element, without that.
+ */
 function createDialogElement<T extends {title?: string, message: string}>(template: (props: T) => string, {message, ...props}: Omit<T, 'title'>) {
     setupStyle()
-    const dialog = document.createElement('div')
+    const dialog = document.createElement('dialog')
     const title = message?.split(':')[0]
     if (title && message) message = message.replace(title + ':', '').trim()
     // @ts-expect-error unk
     dialog.innerHTML = template({...props, message, title})
     dialog.classList.add('dialog-container')
     document.body.appendChild(dialog)
+    if (typeof dialog.showModal === 'function') dialog.showModal()
     return dialog
+}
+
+/**
+ * A close of the dialog by the browser: Escape when no key listener of the dialog took it, the back gesture on Android,
+ * or a second Escape that Chrome does not let a page stop. The dialog then does what its own Escape does (`cancel`).
+ */
+function onBrowserClose(dialog: HTMLDialogElement, cancel: () => void) {
+    dialog.addEventListener('cancel', (event) => {
+        event.preventDefault()
+        cancel()
+    })
+    // still on the page: the browser closed it, not the dialog (it removes itself)
+    dialog.addEventListener('close', () => dialog.isConnected && cancel())
 }
 
 /** The most toasts in a container at a time; a new one takes out the oldest */
@@ -160,6 +179,8 @@ function showToast(message: string, {kind = 'info', duration, container = docume
 
 /**
  * A custom dialog wrapper that uses HTML elements to create alert, prompt, confirm and choose dialogs, and toasts, inspired by radix/shadcn style. Provides API similar to the browser's built-in dialog methods, with better UI and more options.
+ * The dialogs are modal `<dialog>` elements (`showModal`): while one is open, the page behind it is dimmed and inert (no
+ * focus or clicks there), and the keyboard focus stays in the dialog; an app with key shortcuts checks `dialog:modal`. The toasts are not dialogs: they take no focus.
  * @category Browser
  */
 export const htmlDialogWrapper: IDialogWrapper = {
@@ -176,10 +197,14 @@ export const htmlDialogWrapper: IDialogWrapper = {
             }
             const remove = () => {
                 window.removeEventListener('keydown', keydown)
-                document.body.removeChild(dialog)
+                dialog.remove()
             }
             window.addEventListener('keydown', keydown)
             okButton?.addEventListener('click', () => {
+                remove()
+                resolve()
+            })
+            onBrowserClose(dialog, () => {
                 remove()
                 resolve()
             })
@@ -213,9 +238,11 @@ export const htmlDialogWrapper: IDialogWrapper = {
             }
             const remove = () => {
                 window.removeEventListener('keydown', keydown)
-                document.body.removeChild(dialog)
+                dialog.remove()
             }
             window.addEventListener('keydown', keydown)
+            // without a Cancel button the prompt stays open until OK
+            onBrowserClose(dialog, () => cancelButton ? cancelButton.click() : !dialog.open && dialog.showModal())
             okButton?.addEventListener('click', () => {
                 const value = input.value
                 remove()
@@ -244,9 +271,13 @@ export const htmlDialogWrapper: IDialogWrapper = {
             }
             const remove = () => {
                 window.removeEventListener('keydown', keydown)
-                document.body.removeChild(dialog)
+                dialog.remove()
             }
             window.addEventListener('keydown', keydown)
+            onBrowserClose(dialog, () => {
+                remove()
+                resolve(false)
+            })
             okButton?.addEventListener('click', () => {
                 remove()
                 resolve(true)
@@ -284,9 +315,13 @@ export const htmlDialogWrapper: IDialogWrapper = {
             }
             const remove = () => {
                 window.removeEventListener('keydown', keydown)
-                document.body.removeChild(dialog)
+                dialog.remove()
             }
             window.addEventListener('keydown', keydown)
+            onBrowserClose(dialog, () => {
+                remove()
+                resolve(null)
+            })
             buttons.forEach((b, i) => b.addEventListener('click', () => {
                 remove()
                 resolve(opts[i].id)

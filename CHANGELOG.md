@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.23.0
+
+### Changes
+
+- **htmlDialogWrapper:** the alert, prompt, confirm and choose dialogs are modal `<dialog>` elements, opened with `showModal()`, not fixed `div`s. While one is open, the page behind it is inert: a click, the focus and Tab stay in the dialog, and an app can check `dialog:modal` to keep its own key shortcuts from acting behind it (threepipe's `viewer.actions` does). The page behind is dimmed (`::backdrop`, `rgba(0, 0, 0, 0.2)`); the dialog keeps its place and look.
+  - A close by the browser (Escape that the dialog did not take, the back gesture on Android, a second Escape that Chrome does not let a page stop) does what the dialog's Escape does: the alert resolves, the confirm resolves `false`, the prompt `null`, the choose `null`. A prompt without a Cancel button stays open. Before, such a close could leave the promise waiting.
+  - A browser without `showModal` (before Safari 15.4) shows the dialog as a fixed element, as before.
+
 ## 0.22.0
 
 ### Features
