@@ -209,12 +209,14 @@ export class JSUndoManager {
 
     /**
      * Whether the hot keys act on this key event. Default: not when it comes from an input, a textarea, a select or an
-     * editable element (a text field keeps its own undo), or when it was already handled (`defaultPrevented`). Override
-     * to change it.
+     * editable element (a text field keeps its own undo; also inside an open shadow root, through composedPath), or when
+     * it was already handled (`defaultPrevented`). Override to change it. With nothing to undo or redo the key is not
+     * taken either.
      */
     shouldHandleKeyEvent(e: KeyboardEvent): boolean {
         if (e.defaultPrevented) return false
-        const t = e.target as (HTMLElement & {isContentEditable?: boolean}) | null
+        // the original target: inside an (open) shadow root, e.target is the shadow host (a math field's input)
+        const t = (e.composedPath?.()[0] ?? e.target) as (HTMLElement & {isContentEditable?: boolean}) | null
         if (!t || typeof t !== 'object') return true
         if (t.isContentEditable) return false
         return !/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName ?? '')
@@ -234,6 +236,8 @@ export class JSUndoManager {
         const undo = e.code === 'KeyZ' && ctrlKey && !e.shiftKey
         const redo = (e.code === 'KeyZ' && ctrlKey && e.shiftKey) || (e.code === 'KeyY' && e.ctrlKey)
         if (!(undo || redo) || !this.shouldHandleKeyEvent(e)) return
+        // nothing to undo or redo: the key is left to the page (the browser's own undo)
+        if (undo ? !this.canUndo() : !this.canRedo()) return
         e.preventDefault() // the browser's own undo (of the last typed text) must not run too
         if (undo) this.undo()
         else this.redo()

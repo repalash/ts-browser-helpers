@@ -118,6 +118,23 @@ describe('JSUndoManager hot keys', () => {
         }
     })
 
+    it('looks at the original target inside a shadow root', () => {
+        const r = root()
+        const {state} = withStep(r)
+        const e = r.key({target: {tagName: 'MATH-FIELD'}, composedPath: () => [{tagName: 'TEXTAREA'}, {tagName: 'MATH-FIELD'}]})
+        expect(e.defaultPrevented).toBe(false)
+        expect(state.value).toBe(1)
+    })
+
+    it('leaves the key to the page when there is nothing to undo or redo', () => {
+        const r = root()
+        const {state} = withStep(r)
+        expect(r.key({shiftKey: true}).defaultPrevented).toBe(false) // nothing to redo
+        r.key({})
+        expect(state.value).toBe(0)
+        expect(r.key({}).defaultPrevented).toBe(false) // nothing left to undo
+    })
+
     it('can be unbound and bound again at any time, keeping the stack', () => {
         const r = root()
         const {m, state} = withStep(r)
