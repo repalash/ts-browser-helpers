@@ -1,31 +1,31 @@
-/* the dialogs (htmlDialogWrapper alert, confirm, prompt, choose). They follow the light or dark mode of the system; an app
+/* the dialogs (htmlDialogWrapper alert, confirm, prompt, choose), in the colours of a Figma-like UI: a blue main button,
+   grey second buttons and field. They follow the light or dark mode of the system; an app
    sets these variables (on :root or body) to match its own theme; :where() makes these defaults lose to any app rule. */
 :where(:root) {
     --dialog-bg: #ffffff;
-    --dialog-fg: #0a0a0a;
-    --dialog-muted: #737373;
-    --dialog-border: #e5e5e5;
-    --dialog-primary: #171717;
-    --dialog-primary-fg: #fafafa;
-    --dialog-hover: #f5f5f5;
-    --dialog-ring: #a3a3a3;
-    --dialog-link: #2563eb;
-    --dialog-backdrop: rgba(0, 0, 0, 0.3);
+    --dialog-fg: #1e1e1e;
+    --dialog-muted: #757575;
+    --dialog-border: #e6e6e6;
+    --dialog-primary: #0d99ff;
+    --dialog-primary-fg: #ffffff;
+    --dialog-secondary: #f5f5f5;
+    --dialog-hover: #ebebeb;
+    --dialog-ring: #0d99ff;
+    --dialog-link: #007be5;
+    --dialog-backdrop: rgba(0, 0, 0, 0.25);
     --dialog-radius: 12px;
     --dialog-color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
     :where(:root) {
-        --dialog-bg: #171717;
-        --dialog-fg: #fafafa;
-        --dialog-muted: #a3a3a3;
-        --dialog-border: #2e2e2e;
-        --dialog-primary: #fafafa;
-        --dialog-primary-fg: #171717;
-        --dialog-hover: #262626;
-        --dialog-ring: #737373;
-        --dialog-link: #60a5fa;
-        --dialog-backdrop: rgba(0, 0, 0, 0.6);
+        --dialog-bg: #2c2c2c;
+        --dialog-fg: #ffffff;
+        --dialog-muted: #b3b3b3;
+        --dialog-border: #444444;
+        --dialog-secondary: #383838;
+        --dialog-hover: #444444;
+        --dialog-link: #4db5ff;
+        --dialog-backdrop: rgba(0, 0, 0, 0.5);
         --dialog-color-scheme: dark;
     }
 }
@@ -112,11 +112,11 @@
 .dialog-button, .dialog-input {
     box-sizing: border-box;
     height: 36px;
-    border: 1px solid var(--dialog-border);
-    border-radius: 8px;
+    border: 1px solid transparent;
+    border-radius: 6px;
     font: inherit;
     color: var(--dialog-fg);
-    background: transparent;
+    background: var(--dialog-secondary);
 }
 .dialog-input {
     width: 100%;
