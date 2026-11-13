@@ -57,6 +57,15 @@ export type JSUndoManagerCommand2 = {
  */
 export type JSUndoManagerCommand = JSUndoManagerCommand1 | JSUndoManagerCommand2
 
+/** The input types that take no text: a focused one does not stop the hot keys ({@link JSUndoManager.shouldHandleKeyEvent}) */
+const NO_TEXT_INPUTS = new Set(['checkbox', 'radio', 'button', 'submit', 'reset', 'image', 'range', 'color', 'file', 'hidden'])
+
+/** The browser runs on a Mac, an iPhone or an iPad: the hot keys use Cmd */
+function isMacPlatform() {
+    if (typeof navigator === 'undefined') return false
+    return /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '')
+}
+
 /**
  * What changed in a {@link JSUndoManager}, passed to listeners added with
  * {@link JSUndoManager.addChangeListener}.
@@ -160,10 +169,10 @@ export class JSUndoManager {
     }
 
     constructor(options: JSUndoManagerOptions) {
+        // the defaults stay for an option that is not given (limit 500)
         Object.assign(this.options, options);
 
-        this.limit = options.limit;
-        this.options = options;
+        this.limit = this.options.limit;
         this.reset();
 
         // if (options.useTransactions) {
@@ -184,10 +193,12 @@ export class JSUndoManager {
     }
 
     /**
-     * Bind 'undo' and 'redo' actions to 'Ctrl/Cmd+Z', 'Ctrl+Y' & 'Ctrl/Cmd+Shift+Z' hot keys, on `options.hotKeyRoot`
-     * (default `document`). Calling it again does nothing. Keys typed in an input, a textarea, a select or an editable
-     * element are left to it ({@link shouldHandleKeyEvent}). An app that handles the keys itself calls
-     * {@link unbindHotKeys} (at any time) and calls {@link undo} / {@link redo}.
+     * Bind 'undo' and 'redo' to the hot keys, on `options.hotKeyRoot` (default `document`): Cmd+Z and Cmd+Shift+Z on a
+     * Mac, Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y elsewhere. The keys follow the letter printed on the key (on a QWERTZ
+     * keyboard, Ctrl + the key labelled Z undoes), and its place when it types no Latin letter (Cyrillic, Greek). A key
+     * with Alt (AltGr on Windows types letters) or the other modifier is left alone. Calling it again does nothing. Keys
+     * typed in a text field or an editable element are left to it ({@link shouldHandleKeyEvent}). An app that handles
+     * the keys itself calls {@link unbindHotKeys} (at any time) and calls {@link undo} / {@link redo}.
      * @returns {JSUndoManager}
      */
     bindHotKeys() {
@@ -208,18 +219,21 @@ export class JSUndoManager {
     }
 
     /**
-     * Whether the hot keys act on this key event. Default: not when it comes from an input, a textarea, a select or an
-     * editable element (a text field keeps its own undo; also inside an open shadow root, through composedPath), or when
-     * it was already handled (`defaultPrevented`). Override to change it. With nothing to undo or redo the key is not
-     * taken either.
+     * Whether the hot keys act on this key event. Default: not when it comes from a text field (an input that takes
+     * text, a textarea, a select) or an editable element, which keep their own undo (also inside an open shadow root,
+     * through composedPath), or when it was already handled (`defaultPrevented`). A focused checkbox, radio button,
+     * range, color input or button does not stop the keys. Override to change it. With nothing to undo or redo the key
+     * is not taken either.
      */
     shouldHandleKeyEvent(e: KeyboardEvent): boolean {
         if (e.defaultPrevented) return false
         // the original target: inside an (open) shadow root, e.target is the shadow host (a math field's input)
-        const t = (e.composedPath?.()[0] ?? e.target) as (HTMLElement & {isContentEditable?: boolean}) | null
+        const t = (e.composedPath?.()[0] ?? e.target) as (HTMLElement & {isContentEditable?: boolean, type?: string}) | null
         if (!t || typeof t !== 'object') return true
         if (t.isContentEditable) return false
-        return !/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName ?? '')
+        const tag = t.tagName ?? ''
+        if (tag === 'INPUT') return NO_TEXT_INPUTS.has((t.type ?? 'text').toLowerCase())
+        return tag !== 'TEXTAREA' && tag !== 'SELECT'
     }
 
     /**
@@ -232,9 +246,14 @@ export class JSUndoManager {
 
     private _keyDown = (e: KeyboardEvent) => {
         if(!this.enabled) return
-        const ctrlKey = e.ctrlKey || e.metaKey;
-        const undo = e.code === 'KeyZ' && ctrlKey && !e.shiftKey
-        const redo = (e.code === 'KeyZ' && ctrlKey && e.shiftKey) || (e.code === 'KeyY' && e.ctrlKey)
+        // Cmd on a Mac, Ctrl elsewhere; the other one, or Alt (AltGr on Windows is Ctrl+Alt and types letters): not a hot key
+        const mac = isMacPlatform()
+        if (!(mac ? e.metaKey : e.ctrlKey) || (mac ? e.ctrlKey : e.metaKey) || e.altKey) return
+        // the letter on the key; its place when it types no Latin letter (Cyrillic, Greek)
+        const key = (e.key ?? '').toLowerCase()
+        const letter = /^[a-z]$/.test(key) ? key : /^Key[A-Z]$/.test(e.code ?? '') ? e.code.slice(3).toLowerCase() : ''
+        const undo = letter === 'z' && !e.shiftKey
+        const redo = letter === 'z' && e.shiftKey || !mac && letter === 'y' && !e.shiftKey
         if (!(undo || redo) || !this.shouldHandleKeyEvent(e)) return
         // nothing to undo or redo: the key is left to the page (the browser's own undo)
         if (undo ? !this.canUndo() : !this.canRedo()) return
@@ -279,10 +298,12 @@ export class JSUndoManager {
 
         // Record the command itself. This used to be `this.record.apply(this, command1)`, which passed the
         // command object as the argument list, so `record` received `undefined` and pushed it onto the stack.
-        this.record(command);
+        // The listeners are told after the command ran, as for undo and redo.
+        this._record(command, false);
 
         this.log("Executing function...");
         command1.redo.apply(command1);
+        this._changed('record', command);
 
         return this;
     }
@@ -300,7 +321,7 @@ export class JSUndoManager {
             return command as JSUndoManagerCommand1
     }
 
-    _record(command: JSUndoManagerCommand) {
+    _record(command: JSUndoManagerCommand, notify = true) {
         if(!this.enabled) return
         // if (this.transaction.isInProgress())
         //     return this.transaction._record(command);
@@ -313,7 +334,7 @@ export class JSUndoManager {
         this.sp++;
 
         this._keepLimit();
-        this._changed('record', command);
+        if (notify) this._changed('record', command);
     }
 
     //forget "future" commands if stack pointer is not at the end
@@ -421,7 +442,7 @@ export class JSUndoManager {
 
         if (limit < redoable) {
             console.warn(`JSUndoManager.setLimit(): cannot set stack limit (${limit}) less than the number of 'redoable' commands (${redoable})`);
-        } else {
+        } else if (Math.floor(limit) !== this.limit) {
             this.limit = Math.floor(limit);
             this._keepLimit();
             this._changed('limit');

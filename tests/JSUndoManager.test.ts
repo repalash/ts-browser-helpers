@@ -1,4 +1,4 @@
-import {describe, expect, it} from 'vitest'
+import {afterEach, describe, expect, it, vi} from 'vitest'
 import {JSUndoManager, JSUndoManagerChangeEvent} from '../src/JSUndoManager'
 
 const manager = (limit = 10) => new JSUndoManager({limit, debug: false, bindHotKeys: false})
@@ -14,6 +14,24 @@ describe('JSUndoManager.execute', () => {
         expect(value).toBe(0)
         m.redo()
         expect(value).toBe(1)
+    })
+
+    it('tells the listeners after the command ran', () => {
+        const m = manager()
+        const state = {value: 0}
+        let seen: unknown[] = []
+        m.addChangeListener(e => { seen = [e.action, state.value] })
+        m.execute({redo: () => { state.value = 1 }, undo: () => { state.value = 0 }})
+        expect(seen).toEqual(['record', 1])
+    })
+})
+
+describe('JSUndoManager options', () => {
+    it('keeps the default limit when none is given', () => {
+        const m = new JSUndoManager({debug: false})
+        expect(m.limit).toBe(500)
+        m.record({redo: () => {}, undo: () => {}})
+        expect(m.canUndo()).toBe(true)
     })
 })
 
@@ -44,6 +62,7 @@ describe('JSUndoManager change listeners', () => {
         m.undo() // nothing to undo
         m.redo() // nothing to redo
         m.enabled = true // unchanged
+        m.setLimit(10) // unchanged
         expect(seen).toEqual([])
     })
 
@@ -86,7 +105,7 @@ describe('JSUndoManager hot keys', () => {
             addEventListener: (_t: string, l: any) => listeners.add(l),
             removeEventListener: (_t: string, l: any) => listeners.delete(l),
             key: (init: Record<string, unknown>) => {
-                const e = {code: 'KeyZ', ctrlKey: true, metaKey: false, shiftKey: false, defaultPrevented: false, target: {tagName: 'DIV'}, preventDefault() { e.defaultPrevented = true }, ...init}
+                const e = {key: 'z', code: 'KeyZ', ctrlKey: true, altKey: false, metaKey: false, shiftKey: false, defaultPrevented: false, target: {tagName: 'DIV'}, preventDefault() { e.defaultPrevented = true }, ...init}
                 listeners.forEach(l => l(e))
                 return e
             },
@@ -133,6 +152,61 @@ describe('JSUndoManager hot keys', () => {
         r.key({})
         expect(state.value).toBe(0)
         expect(r.key({}).defaultPrevented).toBe(false) // nothing left to undo
+    })
+
+    afterEach(() => {
+        vi.unstubAllGlobals()
+    })
+
+    it('follows the letter on the key: Ctrl+Z on a QWERTZ keyboard undoes, Ctrl+Y redoes', () => {
+        const r = root()
+        const {state} = withStep(r)
+        // the key labelled Y on QWERTZ is at the place of Z (KeyZ): it redoes, it does not undo
+        expect(r.key({key: 'y', code: 'KeyZ'}).defaultPrevented).toBe(false)
+        r.key({key: 'z', code: 'KeyY'})
+        expect(state.value).toBe(0)
+        r.key({key: 'y', code: 'KeyZ'})
+        expect(state.value).toBe(1)
+    })
+
+    it('uses the place of the key when it types no Latin letter (Cyrillic)', () => {
+        const r = root()
+        const {state} = withStep(r)
+        r.key({key: 'я', code: 'KeyZ'})
+        expect(state.value).toBe(0)
+    })
+
+    it('leaves a key with Alt (AltGr on Windows types letters) to the page', () => {
+        const r = root()
+        const {state} = withStep(r)
+        expect(r.key({key: 'ż', altKey: true}).defaultPrevented).toBe(false)
+        expect(r.key({key: 'z', altKey: true}).defaultPrevented).toBe(false)
+        expect(state.value).toBe(1)
+    })
+
+    it('uses Cmd on a Mac and Ctrl elsewhere', () => {
+        const r = root()
+        const {state} = withStep(r)
+        expect(r.key({ctrlKey: false, metaKey: true}).defaultPrevented).toBe(false) // the Windows key elsewhere
+        vi.stubGlobal('navigator', {platform: 'MacIntel', userAgent: 'Macintosh'})
+        expect(r.key({}).defaultPrevented).toBe(false) // Ctrl+Z on a Mac
+        r.key({ctrlKey: false, metaKey: true})
+        expect(state.value).toBe(0)
+        r.key({ctrlKey: false, metaKey: true, shiftKey: true, key: 'Z'})
+        expect(state.value).toBe(1)
+    })
+
+    it('a focused checkbox, range or button does not block the keys; a text input does', () => {
+        const r = root()
+        const {state} = withStep(r)
+        expect(r.key({target: {tagName: 'INPUT', type: 'text'}}).defaultPrevented).toBe(false)
+        expect(state.value).toBe(1)
+        r.key({target: {tagName: 'INPUT', type: 'checkbox'}})
+        expect(state.value).toBe(0)
+        r.key({target: {tagName: 'INPUT', type: 'range'}, shiftKey: true})
+        expect(state.value).toBe(1)
+        r.key({target: {tagName: 'BUTTON'}})
+        expect(state.value).toBe(0)
     })
 
     it('can be unbound and bound again at any time, keeping the stack', () => {
