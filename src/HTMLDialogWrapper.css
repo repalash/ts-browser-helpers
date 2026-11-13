@@ -1,136 +1,172 @@
+/* the dialogs (htmlDialogWrapper alert, confirm, prompt, choose). They follow the light or dark mode of the system; an app
+   sets these variables (on :root or body) to match its own theme; :where() makes these defaults lose to any app rule. */
+:where(:root) {
+    --dialog-bg: #ffffff;
+    --dialog-fg: #0a0a0a;
+    --dialog-muted: #737373;
+    --dialog-border: #e5e5e5;
+    --dialog-primary: #171717;
+    --dialog-primary-fg: #fafafa;
+    --dialog-hover: #f5f5f5;
+    --dialog-ring: #a3a3a3;
+    --dialog-link: #2563eb;
+    --dialog-backdrop: rgba(0, 0, 0, 0.3);
+    --dialog-radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+    :where(:root) {
+        --dialog-bg: #171717;
+        --dialog-fg: #fafafa;
+        --dialog-muted: #a3a3a3;
+        --dialog-border: #2e2e2e;
+        --dialog-primary: #fafafa;
+        --dialog-primary-fg: #171717;
+        --dialog-hover: #262626;
+        --dialog-ring: #737373;
+        --dialog-link: #60a5fa;
+        --dialog-backdrop: rgba(0, 0, 0, 0.6);
+    }
+}
+
 /* a modal <dialog> (showModal): the browser puts it in the top layer, over the whole page (z-index has no effect then);
-   the inset, margin and max-height of the browser's dialog:modal style are reset, so it stays centred by the transform */
+   the inset and margin of the browser's dialog:modal style are reset, so it stays centred by the transform */
 .dialog-container {
     position: fixed;
     inset: auto;
-    margin: 0;
-    max-height: calc(100% - 32px);
-    overflow: auto;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1000;
-    border-radius: 10px;
-    padding: 20px;
-    max-width: calc(100% - 32px);
-    width: calc(100% - 32px);
-    color: oklch(0.145 0 0);
-    background-color: oklch(1 0 0);
-    border: 1px solid oklch(0.922 0 0);
-    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.1) 0px 4px 6px -4px;
-    display: flex;
-    gap: 1rem;
-    flex-direction: column;
+    margin: 0;
     box-sizing: border-box;
-    font-family: Inter, -apple-system, "system-ui", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-    transition: max-width 0.5s, width 0.5s, height 0.5s;
+    /* the width of the screen less 16px on each side, and less the notch and the home bar */
+    width: calc(100% - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    max-width: 440px;
+    max-height: calc(100% - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    overflow: auto;
+    overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+    border: 1px solid var(--dialog-border);
+    border-radius: var(--dialog-radius);
+    color: var(--dialog-fg);
+    background: var(--dialog-bg);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    font: 14px/1.45 Inter, -apple-system, "system-ui", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    -webkit-text-size-adjust: 100%;
+    animation: dialog-in .15s ease-out;
 }
-
-/* the page behind the open dialog, the same in each browser */
+/* the page behind the open dialog */
 .dialog-container::backdrop {
-    background: rgba(0, 0, 0, 0.2);
+    /* a fallback: an older browser does not pass the variables to ::backdrop */
+    background: var(--dialog-backdrop, rgba(0, 0, 0, 0.3));
+    animation: dialog-fade .15s ease-out;
+}
+@keyframes dialog-in {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+}
+@keyframes dialog-fade {
+    from { opacity: 0; }
 }
 
 .dialog-content {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 6px;
     text-align: center;
 }
-
 .dialog-title {
-    font-size: 1.125rem;
+    font-size: 17px;
     font-weight: 600;
-    line-height: 1.5;
-    color: oklch(.145 0 0);
+    line-height: 1.35;
+    overflow-wrap: anywhere;
 }
-
 .dialog-message {
-    color: oklch(.556 0 0);
-    font-size: 0.875rem;
-    line-height: 1.42;
+    color: var(--dialog-muted);
+    overflow-wrap: anywhere;
 }
 
+/* a phone: the buttons in a column, the main one on top and as wide as the dialog */
 .dialog-footer {
     display: flex;
-    gap: 10px;
     flex-direction: column-reverse;
+    gap: 8px;
 }
-@media (width >= 40rem) {
+@media (min-width: 480px) {
     .dialog-content {
         text-align: left;
-    }
-    .dialog-container {
-        max-width: 512px;
-        width: 512px;
     }
     .dialog-footer {
         flex-direction: row;
         justify-content: flex-end;
         flex-wrap: wrap;
-        row-gap: 8px;
     }
 }
 
 .dialog-button, .dialog-input {
-    height: 2.25rem;
     box-sizing: border-box;
-}
-
-.dialog-input{
-    width: 100%;
-    padding: 0.25rem 0.75rem;
-    font-size: 1rem;
-    border: 1px solid oklch(0.922 0 0);
-    border-radius: 0.5rem;
+    height: 36px;
+    border: 1px solid var(--dialog-border);
+    border-radius: 8px;
+    font: inherit;
+    color: var(--dialog-fg);
     background: transparent;
-    color: oklch(.145 0 0);
-    outline: none;
-    transition: outline-width 0.2s;
 }
-/*.dialog-input::selection, .dialog-input::-moz-selection, .dialog-input::-webkit-selection {*/
-/*    background-color: oklch(.145 0 0);*/
-/*    color: oklch(0.922 0 0);*/
-/*}*/
-
+.dialog-input {
+    width: 100%;
+    margin-top: 10px;
+    padding: 0 12px;
+    font-size: 16px; /* 16px: iOS does not zoom into the field */
+}
 .dialog-button {
-    padding: 0.5rem 1rem;
-    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
-    border-radius: 0.5rem;
-    border: 1px solid oklch(0.922 0 0);
+    padding: 0 16px;
+    font-weight: 500;
     cursor: pointer;
-    font-size: 0.875rem;
-    background-color: oklch(1 0 0);
-    color: oklch(.145 0 0);
-    transition: background-color 0.2s ease, color 0.2s ease, outline-width 0.2s ease;
-}
-.dialog-button:focus, .dialog-input:focus {
-    outline: 3px solid #6d7a8c66;
+    white-space: nowrap;
+    transition: background-color .15s ease;
 }
 .dialog-button:hover {
-    background-color: oklch(0.98 0 0);
+    background: var(--dialog-hover);
 }
-
-.dialog-ok {
-    background-color: oklch(.145 0 0);
-    color: oklch(1 0 0);
+.dialog-ok, .dialog-ok:hover {
+    border-color: var(--dialog-primary);
+    background: var(--dialog-primary);
+    color: var(--dialog-primary-fg);
 }
-
 .dialog-ok:hover {
-    background-color: oklch(0.250 0 0);
+    opacity: 0.88;
+}
+.dialog-button:focus {
+    outline: none;
+}
+/* the ring shows for the keyboard; a text field shows it also after a click */
+.dialog-button:focus-visible, .dialog-input:focus {
+    outline: 2px solid var(--dialog-ring);
+    outline-offset: 2px;
+}
+/* a touch screen: buttons and the field of at least 44px */
+@media (pointer: coarse) {
+    .dialog-button, .dialog-input {
+        height: 44px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .dialog-container, .dialog-container::backdrop {
+        animation: none;
+    }
 }
 
-/* Add ellipsis styling for links */
+/* a long link ends with … */
 .dialog-link {
     max-width: 100%;
     display: inline-block;
     vertical-align: bottom;
     text-decoration: underline;
-    /*color: var(--link-color, #2563eb);*/
-    color: var(#2563eb);
+    color: var(--dialog-link);
     overflow: hidden;
 }
-
 .dialog-link-text {
     display: inline-block;
     max-width: 100%;

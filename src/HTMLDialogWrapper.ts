@@ -3,6 +3,7 @@ import cssTemplate from './HTMLDialogWrapper.css?inline'
 import {escapeHtml} from "./text";
 
 let styleElement: HTMLStyleElement | null = null
+let dialogCount = 0
 
 // Utility to auto-link URLs in text
 function linkify(text: string) {
@@ -27,7 +28,7 @@ function renderMessage(message: string) {
 function titleMessage(props: { title?: string; message: string; ok?: string }) {
     return `
 ${props.title ? `<div class="dialog-title">${escapeHtml(props.title)}</div>` : ''}
-<div class="dialog-message">${renderMessage(props.message)}</div>
+${props.message ? `<div class="dialog-message">${renderMessage(props.message)}</div>` : ''}
 `;
 }
 
@@ -67,7 +68,7 @@ const promptTemplate = (props: {
 })=>`
 <div class="dialog-content">
     ${titleMessage(props)}
-    <input class="dialog-input" type="text" value="${props.defaultValue ?? ''}" style="margin-top:0.5rem;"/>
+    <input class="dialog-input" type="text" value="${escapeHtml(props.defaultValue ?? '')}"/>
 </div>
 <div class="dialog-footer">
     ${props.cancel && `<button class="dialog-button dialog-cancel">${escapeHtml(props.cancel)}</button>` || ''}
@@ -107,11 +108,20 @@ function setupStyle() {
 function createDialogElement<T extends {title?: string, message: string}>(template: (props: T) => string, {message, ...props}: Omit<T, 'title'>) {
     setupStyle()
     const dialog = document.createElement('dialog')
-    const title = message?.split(':')[0]
-    if (title && message) message = message.replace(title + ':', '').trim()
+    // "Title: message"; a message without a colon is the title only, and a colon of a link (https://) is not a title
+    const colon = message.search(/:(?!\/\/)/)
+    const title = colon > 0 ? message.slice(0, colon).trim() : message
+    message = colon > 0 ? message.slice(colon + 1).trim() : ''
     // @ts-expect-error unk
     dialog.innerHTML = template({...props, message, title})
     dialog.classList.add('dialog-container')
+    // an answer is needed: the screen reader reads the title and the message when it opens
+    const id = 'dialog-' + ++dialogCount
+    dialog.setAttribute('role', 'alertdialog')
+    dialog.querySelector('.dialog-title')?.setAttribute('id', id + '-title')
+    dialog.querySelector('.dialog-message')?.setAttribute('id', id + '-message')
+    dialog.setAttribute('aria-labelledby', id + '-title')
+    if (message) dialog.setAttribute('aria-describedby', id + '-message')
     document.body.appendChild(dialog)
     if (typeof dialog.showModal === 'function') dialog.showModal()
     return dialog
