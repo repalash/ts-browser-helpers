@@ -19,7 +19,7 @@ export interface JSUndoManagerOptions{
     /**
      * Root element for hot keys binding.
      */
-    hotKeyRoot?: HTMLElement;
+    hotKeyRoot?: Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
     // useTransactions: boolean;
 }
 
@@ -176,38 +176,67 @@ export class JSUndoManager {
         this.log(`Initialized with stack limit of ${this.limit} commands`);
     }
 
+    private _hotKeyRoot?: Pick<EventTarget, 'addEventListener' | 'removeEventListener'>
+
+    /** Whether the Ctrl/Cmd+Z, Ctrl+Y and Ctrl/Cmd+Shift+Z listener is bound (see {@link bindHotKeys}). */
+    get hotKeysBound(): boolean {
+        return !!this._hotKeyRoot
+    }
+
     /**
-     * Bind 'undo' and 'redo' actions to 'Ctrl/Cmd+Z', 'Ctrl+Y' & 'Ctrl/Cmd+Shift+Z' hot keys.
-     * It is a basic implementation for quick testing and should be replaced with custom event handlers
-     * for more flexible processing.
+     * Bind 'undo' and 'redo' actions to 'Ctrl/Cmd+Z', 'Ctrl+Y' & 'Ctrl/Cmd+Shift+Z' hot keys, on `options.hotKeyRoot`
+     * (default `document`). Calling it again does nothing. Keys typed in an input, a textarea, a select or an editable
+     * element are left to it ({@link shouldHandleKeyEvent}). An app that handles the keys itself calls
+     * {@link unbindHotKeys} (at any time) and calls {@link undo} / {@link redo}.
      * @returns {JSUndoManager}
      */
     bindHotKeys() {
+        if (this._hotKeyRoot) return this
+        const elem = this.options.hotKeyRoot ?? (typeof document !== 'undefined' ? document : undefined)
+        if (!elem) return this
         this.log("Bound 'undo' and 'redo' actions to 'Ctrl/Cmd+Z', 'Ctrl+Y' & 'Ctrl/Cmd+Shift+Z' hot keys");
-
-        const elem = this.options.hotKeyRoot??document
-        elem.addEventListener("keydown", this._keyDown);
-
+        elem.addEventListener("keydown", this._keyDown as EventListener);
+        this._hotKeyRoot = elem
         return this;
+    }
+
+    /** Removes the hot key listener of {@link bindHotKeys}; the stack is kept. */
+    unbindHotKeys() {
+        this._hotKeyRoot?.removeEventListener("keydown", this._keyDown as EventListener);
+        this._hotKeyRoot = undefined
+        return this
+    }
+
+    /**
+     * Whether the hot keys act on this key event. Default: not when it comes from an input, a textarea, a select or an
+     * editable element (a text field keeps its own undo), or when it was already handled (`defaultPrevented`). Override
+     * to change it.
+     */
+    shouldHandleKeyEvent(e: KeyboardEvent): boolean {
+        if (e.defaultPrevented) return false
+        const t = e.target as (HTMLElement & {isContentEditable?: boolean}) | null
+        if (!t || typeof t !== 'object') return true
+        if (t.isContentEditable) return false
+        return !/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName ?? '')
     }
 
     /**
      * Removes the event listeners and clears the stack
      */
     dispose() {
-        const elem = this.options.hotKeyRoot??document
-        elem.removeEventListener("keydown", this._keyDown);
+        this.unbindHotKeys()
         return this.reset()
     }
 
     private _keyDown = (e: KeyboardEvent) => {
         if(!this.enabled) return
         const ctrlKey = e.ctrlKey || e.metaKey;
-        if (e.code === 'KeyZ' && ctrlKey && !e.shiftKey) {
-            this.undo();
-        } else if ((e.code === 'KeyZ' && ctrlKey && e.shiftKey) || (e.code === 'KeyY' && e.ctrlKey)) {
-            this.redo();
-        }
+        const undo = e.code === 'KeyZ' && ctrlKey && !e.shiftKey
+        const redo = (e.code === 'KeyZ' && ctrlKey && e.shiftKey) || (e.code === 'KeyY' && e.ctrlKey)
+        if (!(undo || redo) || !this.shouldHandleKeyEvent(e)) return
+        e.preventDefault() // the browser's own undo (of the last typed text) must not run too
+        if (undo) this.undo()
+        else this.redo()
     }
 
     /**

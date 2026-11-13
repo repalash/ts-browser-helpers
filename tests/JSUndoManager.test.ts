@@ -77,3 +77,60 @@ describe('JSUndoManager labels', () => {
         expect(m.stack.map(c => m.labelOf(c))).toEqual(['Extrude', 'Set Color', undefined])
     })
 })
+
+describe('JSUndoManager hot keys', () => {
+    const root = () => {
+        const listeners = new Set<(e: any) => void>()
+        return {
+            listeners,
+            addEventListener: (_t: string, l: any) => listeners.add(l),
+            removeEventListener: (_t: string, l: any) => listeners.delete(l),
+            key: (init: Record<string, unknown>) => {
+                const e = {code: 'KeyZ', ctrlKey: true, metaKey: false, shiftKey: false, defaultPrevented: false, target: {tagName: 'DIV'}, preventDefault() { e.defaultPrevented = true }, ...init}
+                listeners.forEach(l => l(e))
+                return e
+            },
+        }
+    }
+    const withStep = (r: ReturnType<typeof root>) => {
+        const m = new JSUndoManager({limit: 10, debug: false, bindHotKeys: true, hotKeyRoot: r})
+        const state = {value: 0}
+        m.execute({redo: () => { state.value = 1 }, undo: () => { state.value = 0 }})
+        return {m, state}
+    }
+
+    it('Ctrl+Z undoes and Ctrl+Shift+Z redoes, and prevents the default', () => {
+        const r = root()
+        const {state} = withStep(r)
+        expect(r.key({}).defaultPrevented).toBe(true)
+        expect(state.value).toBe(0)
+        r.key({shiftKey: true})
+        expect(state.value).toBe(1)
+    })
+
+    it('leaves keys typed in a text field or an editable element to it', () => {
+        const r = root()
+        const {state} = withStep(r)
+        for (const target of [{tagName: 'INPUT'}, {tagName: 'TEXTAREA'}, {tagName: 'SELECT'}, {tagName: 'DIV', isContentEditable: true}]) {
+            const e = r.key({target})
+            expect(e.defaultPrevented).toBe(false)
+            expect(state.value).toBe(1)
+        }
+    })
+
+    it('can be unbound and bound again at any time, keeping the stack', () => {
+        const r = root()
+        const {m, state} = withStep(r)
+        expect(m.hotKeysBound).toBe(true)
+        m.bindHotKeys() // again: still one listener
+        expect(r.listeners.size).toBe(1)
+        m.unbindHotKeys()
+        expect(m.hotKeysBound).toBe(false)
+        r.key({})
+        expect(state.value).toBe(1)
+        expect(m.getSize()).toBe(1)
+        m.bindHotKeys()
+        r.key({})
+        expect(state.value).toBe(0)
+    })
+})
