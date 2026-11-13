@@ -12,6 +12,7 @@
     --dialog-link: #2563eb;
     --dialog-backdrop: rgba(0, 0, 0, 0.3);
     --dialog-radius: 12px;
+    --dialog-color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
     :where(:root) {
@@ -25,6 +26,7 @@
         --dialog-ring: #737373;
         --dialog-link: #60a5fa;
         --dialog-backdrop: rgba(0, 0, 0, 0.6);
+        --dialog-color-scheme: dark;
     }
 }
 
@@ -53,6 +55,8 @@
     border-radius: var(--dialog-radius);
     color: var(--dialog-fg);
     background: var(--dialog-bg);
+    /* the scroll bar, the caret and the autofill of the field in the same mode as the colours */
+    color-scheme: var(--dialog-color-scheme);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
     font: 14px/1.45 Inter, -apple-system, "system-ui", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
     -webkit-text-size-adjust: 100%;

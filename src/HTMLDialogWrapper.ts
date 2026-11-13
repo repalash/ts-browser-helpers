@@ -314,7 +314,8 @@ export const htmlDialogWrapper: IDialogWrapper = {
             )
             const primaryIdx = Math.max(0, opts.findIndex(o => o.primary))
             const keydown = (event: KeyboardEvent) => {
-                if (event.key === 'Enter') {
+                // Enter on a button presses that button (the browser does it); elsewhere it presses the main one
+                if (event.key === 'Enter' && !buttons.includes(event.target as HTMLButtonElement)) {
                     event.preventDefault()
                     buttons[primaryIdx]?.click()
                 } else if (event.key === 'Escape') {
