@@ -1,125 +1,178 @@
+/* the dialogs (htmlDialogWrapper alert, confirm, prompt, choose), in the colours and sizes of a Figma-like UI: a blue main
+   button, grey second buttons and field, compact (16px padding, 32px buttons, 13px text). They follow the light or dark mode of the system; an app
+   sets these variables (on :root or body) to match its own theme; :where() makes these defaults lose to any app rule. */
+:where(:root) {
+    --dialog-bg: #ffffff;
+    --dialog-fg: #1e1e1e;
+    --dialog-muted: #757575;
+    --dialog-border: #e6e6e6;
+    --dialog-primary: #0d99ff;
+    --dialog-primary-fg: #ffffff;
+    --dialog-secondary: #f5f5f5;
+    --dialog-hover: #ebebeb;
+    --dialog-ring: #0d99ff;
+    --dialog-link: #007be5;
+    --dialog-backdrop: rgba(0, 0, 0, 0.25);
+    --dialog-radius: 10px;
+    --dialog-color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+    :where(:root) {
+        --dialog-bg: #2c2c2c;
+        --dialog-fg: #ffffff;
+        --dialog-muted: #b3b3b3;
+        --dialog-border: #444444;
+        --dialog-secondary: #383838;
+        --dialog-hover: #444444;
+        --dialog-link: #4db5ff;
+        --dialog-backdrop: rgba(0, 0, 0, 0.5);
+        --dialog-color-scheme: dark;
+    }
+}
+
+/* a modal <dialog> (showModal): the browser puts it in the top layer, over the whole page (z-index has no effect then);
+   the inset and margin of the browser's dialog:modal style are reset, so it stays centred by the transform */
 .dialog-container {
     position: fixed;
+    inset: auto;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1000;
-    border-radius: 10px;
-    padding: 20px;
-    max-width: calc(100% - 32px);
-    width: calc(100% - 32px);
-    color: oklch(0.145 0 0);
-    background-color: oklch(1 0 0);
-    border: 1px solid oklch(0.922 0 0);
-    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.1) 0px 4px 6px -4px;
-    display: flex;
-    gap: 1rem;
-    flex-direction: column;
+    margin: 0;
     box-sizing: border-box;
-    font-family: Inter, -apple-system, "system-ui", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-    transition: max-width 0.5s, width 0.5s, height 0.5s;
+    /* the width of the screen less 16px on each side, and less the notch and the home bar */
+    width: calc(100% - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    max-width: 380px;
+    max-height: calc(100% - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    overflow: auto;
+    overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--dialog-border);
+    border-radius: var(--dialog-radius);
+    color: var(--dialog-fg);
+    background: var(--dialog-bg);
+    /* the scroll bar, the caret and the autofill of the field in the same mode as the colours */
+    color-scheme: var(--dialog-color-scheme);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    font: 13px/1.45 Inter, -apple-system, "system-ui", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    -webkit-text-size-adjust: 100%;
+    animation: dialog-in .15s ease-out;
+}
+/* the page behind the open dialog */
+.dialog-container::backdrop {
+    /* a fallback: an older browser does not pass the variables to ::backdrop */
+    background: var(--dialog-backdrop, rgba(0, 0, 0, 0.3));
+    animation: dialog-fade .15s ease-out;
+}
+@keyframes dialog-in {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+}
+@keyframes dialog-fade {
+    from { opacity: 0; }
 }
 
 .dialog-content {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 4px;
     text-align: center;
 }
-
 .dialog-title {
-    font-size: 1.125rem;
+    font-size: 14px;
     font-weight: 600;
-    line-height: 1.5;
-    color: oklch(.145 0 0);
+    line-height: 1.35;
+    overflow-wrap: anywhere;
 }
-
 .dialog-message {
-    color: oklch(.556 0 0);
-    font-size: 0.875rem;
-    line-height: 1.42;
+    color: var(--dialog-muted);
+    overflow-wrap: anywhere;
 }
 
+/* a phone: the buttons in a column, the main one on top and as wide as the dialog */
 .dialog-footer {
     display: flex;
-    gap: 10px;
     flex-direction: column-reverse;
+    gap: 8px;
 }
-@media (width >= 40rem) {
+@media (min-width: 420px) {
     .dialog-content {
         text-align: left;
-    }
-    .dialog-container {
-        max-width: 512px;
-        width: 512px;
     }
     .dialog-footer {
         flex-direction: row;
         justify-content: flex-end;
         flex-wrap: wrap;
-        row-gap: 8px;
     }
 }
 
 .dialog-button, .dialog-input {
-    height: 2.25rem;
     box-sizing: border-box;
+    height: 32px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font: inherit;
+    color: var(--dialog-fg);
+    background: var(--dialog-secondary);
 }
-
-.dialog-input{
+.dialog-input {
     width: 100%;
-    padding: 0.25rem 0.75rem;
-    font-size: 1rem;
-    border: 1px solid oklch(0.922 0 0);
-    border-radius: 0.5rem;
-    background: transparent;
-    color: oklch(.145 0 0);
-    outline: none;
-    transition: outline-width 0.2s;
+    margin-top: 8px;
+    padding: 0 10px;
 }
-/*.dialog-input::selection, .dialog-input::-moz-selection, .dialog-input::-webkit-selection {*/
-/*    background-color: oklch(.145 0 0);*/
-/*    color: oklch(0.922 0 0);*/
-/*}*/
-
 .dialog-button {
-    padding: 0.5rem 1rem;
-    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
-    border-radius: 0.5rem;
-    border: 1px solid oklch(0.922 0 0);
+    padding: 0 12px;
+    font-weight: 500;
     cursor: pointer;
-    font-size: 0.875rem;
-    background-color: oklch(1 0 0);
-    color: oklch(.145 0 0);
-    transition: background-color 0.2s ease, color 0.2s ease, outline-width 0.2s ease;
-}
-.dialog-button:focus, .dialog-input:focus {
-    outline: 3px solid #6d7a8c66;
+    white-space: nowrap;
+    transition: background-color .15s ease;
 }
 .dialog-button:hover {
-    background-color: oklch(0.98 0 0);
+    background: var(--dialog-hover);
 }
-
-.dialog-ok {
-    background-color: oklch(.145 0 0);
-    color: oklch(1 0 0);
+.dialog-ok, .dialog-ok:hover {
+    border-color: var(--dialog-primary);
+    background: var(--dialog-primary);
+    color: var(--dialog-primary-fg);
 }
-
 .dialog-ok:hover {
-    background-color: oklch(0.250 0 0);
+    opacity: 0.88;
+}
+.dialog-button:focus {
+    outline: none;
+}
+/* the ring shows for the keyboard; a text field shows it also after a click */
+.dialog-button:focus-visible, .dialog-input:focus {
+    outline: 2px solid var(--dialog-ring);
+    outline-offset: 2px;
+}
+/* a touch screen: buttons and the field of at least 44px; the field text 16px, so iOS does not zoom into it */
+@media (pointer: coarse) {
+    .dialog-button, .dialog-input {
+        height: 44px;
+    }
+    .dialog-input {
+        font-size: 16px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .dialog-container, .dialog-container::backdrop {
+        animation: none;
+    }
 }
 
-/* Add ellipsis styling for links */
+/* a long link ends with … */
 .dialog-link {
     max-width: 100%;
     display: inline-block;
     vertical-align: bottom;
     text-decoration: underline;
-    /*color: var(--link-color, #2563eb);*/
-    color: var(#2563eb);
+    color: var(--dialog-link);
     overflow: hidden;
 }
-
 .dialog-link-text {
     display: inline-block;
     max-width: 100%;
