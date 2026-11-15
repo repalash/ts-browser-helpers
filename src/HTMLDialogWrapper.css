@@ -128,3 +128,57 @@
     white-space: nowrap;
     vertical-align: bottom;
 }
+
+/* the toasts (htmlDialogWrapper.toast): small dark chips at the top centre of the page, or of the element given as
+   `container`. Set `--dialog-toast-top` to move them down (under a bar), `--dialog-toast-bg` for another colour. */
+.dialog-toasts {
+    position: fixed;
+    top: var(--dialog-toast-top, 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--dialog-toast-z, 1001);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    max-width: calc(100% - 16px);
+    pointer-events: none;
+    font: 500 12px/1.35 Inter, -apple-system, "system-ui", "Segoe UI", Helvetica, Arial, sans-serif;
+    letter-spacing: 0.01em;
+}
+.dialog-toasts-in {
+    position: absolute;
+}
+.dialog-toast {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: var(--dialog-toast-bg, #1e1e1e);
+    color: #ffffff;
+    box-shadow: var(--dialog-toast-shadow, 0 2px 8px rgba(0, 0, 0, 0.18));
+    pointer-events: auto;
+    cursor: default;
+    animation: dialog-toast-in .15s ease-out;
+}
+/* a dot in the colour of the kind: amber for a warning, red for an error */
+.dialog-toast-warn::before, .dialog-toast-error::before {
+    content: '';
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #f5a524;
+}
+.dialog-toast-error::before {
+    background: #f24822;
+}
+@keyframes dialog-toast-in {
+    from { opacity: 0; transform: translateY(-4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .dialog-toast { animation: none; }
+}

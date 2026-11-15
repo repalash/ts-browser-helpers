@@ -5,6 +5,20 @@ export interface IDialogChooseOption {
 }
 
 /**
+ * The kind of a toast ({@link IDialogWrapper.toast}): a message, a warning or an error
+ */
+export type DialogToastKind = 'info' | 'warn' | 'error'
+
+export interface IDialogToastOptions {
+    /** A message (default), a warning or an error */
+    kind?: DialogToastKind
+    /** How long the toast stays, in ms. `0` keeps it until a click. Default: 4000, an error twice that. */
+    duration?: number
+    /** The element to show it in, like the container of a canvas. Default: the page. */
+    container?: HTMLElement
+}
+
+/**
  * A simple interface for dialog wrappers that can be used to abstract away the browser's built-in dialog methods or custom implementations.
  * @category Browser
  */
@@ -21,6 +35,11 @@ export interface IDialogWrapper {
      * implementations of this interface stay valid.
      */
     choose?: (message?: string, options?: IDialogChooseOption[]) => Promise<string | null>
+    /**
+     * A short message that goes away by itself, like "Link copied" or an error of an action. It does not wait for the
+     * person and takes no focus. Optional, so existing implementations of this interface stay valid.
+     */
+    toast?: (message: string, options?: IDialogToastOptions) => void
 }
 
 /**
@@ -41,5 +60,12 @@ export const windowDialogWrapper: IDialogWrapper = {
         if (ans === null) return null
         const idx = parseInt(ans.trim(), 10) - 1
         return options[idx]?.id ?? null
+    },
+    // the browser has no toast: the console
+    toast: (message, options) => {
+        const kind = options?.kind
+        if (kind === 'error') console.error(message)
+        else if (kind === 'warn') console.warn(message)
+        else console.log(message)
     },
 }
