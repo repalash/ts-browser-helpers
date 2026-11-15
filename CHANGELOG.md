@@ -17,6 +17,7 @@
 
 ### Fixes
 
+- **JSUndoManager:** `dispose()` also removes the change listeners (after they get the `reset`), so a disposed manager keeps no listener alive.
 - **JSUndoManager:** `execute()` recorded `undefined` instead of the command.
 - **JSUndoManager:** an option that is not given keeps its default; `new JSUndoManager({})` had no limit, and undo stopped working after the first step.
 - **recordUndoCommand:** an edit after an undo is a new step and clears what could be redone; it was merged into the step at the pointer, so the undone steps could still be redone on top of it.

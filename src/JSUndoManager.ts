@@ -131,7 +131,9 @@ export class JSUndoManager {
     /**
      * Be told whenever the stack changes: a step recorded, undone, redone or replaced, the stack reset,
      * the limit changed, or the manager enabled/disabled. An undo history list or a menu's enabled state
-     * listens here instead of polling `stack` and `sp`.
+     * listens here instead of polling `stack` and `sp`. A continuous edit (a slider drag, `recordUndoCommand`) replaces
+     * the last step on each change, so a listener that redraws a list can wait for the next frame. A listener keeps what
+     * it closes over alive: remove it (the returned function) when its UI goes; {@link dispose} removes all of them.
      * @returns a function that removes the listener
      */
     addChangeListener(listener: (e: JSUndoManagerChangeEvent) => void): () => void {
@@ -144,7 +146,8 @@ export class JSUndoManager {
     }
 
     private _changed(action: JSUndoManagerChangeEvent['action'], command?: JSUndoManagerCommand): void {
-        if (!this._changeListeners) return // during construction
+        // none yet during construction; none at all: no event object and no copy of the set (a slider drag replaces often)
+        if (!this._changeListeners?.size) return
         for (const listener of [...this._changeListeners]) {
             try {
                 listener({action, manager: this, command})
@@ -156,7 +159,8 @@ export class JSUndoManager {
 
     /**
      * The label of a command: its own `label`, or for a preset command the label of what the preset
-     * makes of it.
+     * makes of it. For a preset command without its own `label` this runs the preset on each call, so a history list of
+     * many steps can keep the labels, or give the commands a `label`.
      */
     labelOf(command: JSUndoManagerCommand | null | undefined): string | undefined {
         if (!command) return undefined
@@ -237,11 +241,14 @@ export class JSUndoManager {
     }
 
     /**
-     * Removes the event listeners and clears the stack
+     * Removes the hot key listener and clears the stack. The change listeners get the `reset`, then they are removed
+     * too, so a disposed manager keeps no listener (and no UI that it closes over) alive.
      */
     dispose() {
         this.unbindHotKeys()
-        return this.reset()
+        this.reset()
+        this._changeListeners.clear()
+        return this
     }
 
     private _keyDown = (e: KeyboardEvent) => {

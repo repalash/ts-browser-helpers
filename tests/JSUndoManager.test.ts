@@ -66,6 +66,15 @@ describe('JSUndoManager change listeners', () => {
         expect(seen).toEqual([])
     })
 
+    it('dispose removes the listeners, so a disposed manager keeps no UI alive', () => {
+        const m = manager()
+        const seen: string[] = []
+        m.addChangeListener(e => seen.push(e.action))
+        m.dispose()
+        m.record({redo: () => {}, undo: () => {}})
+        expect(seen).toEqual(['reset'])
+    })
+
     it('passes the manager and the command', () => {
         const m = manager()
         const cmd = {redo: () => {}, undo: () => {}, label: 'Move'}
