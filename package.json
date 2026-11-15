@@ -1,6 +1,6 @@
 {
   "name": "ts-browser-helpers",
-  "version": "0.23.0",
+  "version": "0.22.0",
   "description": "A collection of utility classes, functions and decorators for javascript/typescript projects, for use in the browser.",
   "main": "dist/bundle.esm.js",
   "module": "dist/bundle.esm.js",
@@ -78,6 +78,7 @@
     "@rollup/plugin-json": "^5.0.1",
     "@rollup/plugin-replace": "^6.0.2",
     "clean-package": "^2.2.0",
+    "dts-js-extensions": "^0.1.0",
     "local-web-server": "^5.4.0",
     "rimraf": "^6.0.1",
     "rollup-plugin-license": "^3.0.1",
