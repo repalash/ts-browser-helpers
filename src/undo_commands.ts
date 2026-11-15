@@ -77,7 +77,9 @@ export function recordUndoCommand<T extends SetValueUndoCommand|ActionUndoComman
     if (c.type !== setValueCommandType) return um.record(com)
 
     const lastCommand = um.peek()
-    let sameType = !!lastCommand && (lastCommand as SetValueUndoCommand).type === setValueCommandType && (lastCommand as SetValueUndoCommand).uid === c.uid
+    // after an undo, a new edit is a new step (record clears what could be redone); merging into the step at the
+    // pointer kept a stale redo
+    let sameType = !um.canRedo() && !!lastCommand && (lastCommand as SetValueUndoCommand).type === setValueCommandType && (lastCommand as SetValueUndoCommand).uid === c.uid
     if (sameType) {
         const cLast = lastCommand as SetValueUndoCommand
         if (!cLast.final && c.time - cLast.time < undoEditingWaitTime) {
