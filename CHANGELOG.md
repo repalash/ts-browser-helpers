@@ -21,7 +21,7 @@
 - **JSUndoManager:** `execute()` recorded `undefined` instead of the command.
 - **JSUndoManager:** an option that is not given keeps its default; `new JSUndoManager({})` had no limit, and undo stopped working after the first step.
 - **recordUndoCommand:** an edit after an undo is a new step and clears what could be redone; it was merged into the step at the pointer, so the undone steps could still be redone on top of it.
-- **htmlDialogWrapper:** a message without a colon (like `alert('The file is saved')`) showed twice, as the title and as the text; it is the title now. A colon of a link (`https://`) does not start the text.
+- **htmlDialogWrapper:** a message without a colon (like `alert('The file is saved')`) showed twice, as the title and as the text; it is the title now, with its links and line breaks. A colon of a link (`https://`) does not start the text.
 - **htmlDialogWrapper:** the default value of `prompt` is escaped; a `"` in it cut the value in the field.
 - **htmlDialogWrapper:** links in a message have the link colour; the CSS value was not valid.
 - **htmlDialogWrapper:** in `choose`, Enter on a focused button presses that button; before, it always pressed the main one.

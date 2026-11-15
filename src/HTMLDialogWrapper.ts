@@ -27,7 +27,7 @@ function renderMessage(message: string) {
 
 function titleMessage(props: { title?: string; message: string; ok?: string }) {
     return `
-${props.title ? `<div class="dialog-title">${escapeHtml(props.title)}</div>` : ''}
+${props.title ? `<div class="dialog-title">${renderMessage(props.title)}</div>` : ''}
 ${props.message ? `<div class="dialog-message">${renderMessage(props.message)}</div>` : ''}
 `;
 }
