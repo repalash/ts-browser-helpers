@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>ts-browser-helpers examples</title>
+    <meta name="description" content="Live examples of ts-browser-helpers: dialogs, toasts, undo, events, pointer, DOM, images, files, data and text helpers for the browser.">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header-inner">
+        <div class="brand">
+            <h1>ts-browser-helpers</h1>
+            <p class="tagline">Small TypeScript helpers for the browser. Each example below runs the code shown next to it.</p>
+        </div>
+        <div class="header-actions">
+            <div class="search">
+                <input type="search" id="search" class="search-input" placeholder="Search examples" aria-label="Search the examples" autocomplete="off" spellcheck="false">
+                <kbd class="search-key" aria-hidden="true">/</kbd>
+            </div>
+            <div class="install">
+                <code id="install-cmd">npm install ts-browser-helpers</code>
+                <button type="button" class="btn btn-quiet" id="copy-install" aria-label="Copy the install command">Copy</button>
+            </div>
+            <nav class="links" aria-label="Links">
+                <a href="https://repalash.com/ts-browser-helpers/">API docs</a>
+                <a href="https://github.com/repalash/ts-browser-helpers">GitHub</a>
+                <a href="https://www.npmjs.com/package/ts-browser-helpers">npm</a>
+            </nav>
+        </div>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="Examples"></nav>
+</header>
+<main id="main"></main>
+<footer class="site-footer">
+    <p>
+        <code>button</code>, <code>input</code>, <code>log</code> and the other names that are not imported in the code are helpers of this page: they add a control to the example or print a result under it.
+    </p>
+</footer>
+<script type="module" src="./main.ts"></script>
+</body>
+</html>
