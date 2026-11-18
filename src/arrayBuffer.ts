@@ -1,20 +1,20 @@
 /**
  * Convert an ArrayBuffer to Base64 string
- * @param buffer - ArrayBuffer to convert
+ * @param buffer - the bytes: an ArrayBuffer, or a typed array or DataView (only its part of the buffer)
  * @category ArrayBuffer
  */
-export function arrayBufferToBase64(buffer: ArrayBuffer) {
-    if (!window) {
-        console.warn('window is required')
+export function arrayBufferToBase64(buffer: ArrayBufferLike | ArrayBufferView) {
+    if (typeof btoa === 'undefined') {
+        console.warn('btoa is required')
         return ''
     }
     let binary = ''
-    const bytes = new Uint8Array(buffer)
+    const bytes = ArrayBuffer.isView(buffer) ? new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength) : new Uint8Array(buffer)
     const len = bytes.byteLength
     for (let i = 0; i < len; i++) {
         binary += String.fromCharCode(bytes[ i ])
     }
-    return window.btoa(binary)
+    return btoa(binary)
 }
 
 /**
@@ -23,11 +23,11 @@ export function arrayBufferToBase64(buffer: ArrayBuffer) {
  * @category ArrayBuffer
  */
 export function base64ToArrayBuffer(base64: string) {
-    if (!window) {
-        console.warn('window is required')
-        return new Uint8Array(0)
+    if (typeof atob === 'undefined') {
+        console.warn('atob is required')
+        return new ArrayBuffer(0)
     }
-    const binaryString = window.atob(base64)
+    const binaryString = atob(base64)
     const len = binaryString.length
     const bytes = new Uint8Array(len)
     for (let i = 0; i < len; i++) {
