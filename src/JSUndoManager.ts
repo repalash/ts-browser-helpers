@@ -172,7 +172,10 @@ export class JSUndoManager {
         return undefined
     }
 
-    constructor(options: JSUndoManagerOptions) {
+    /**
+     * @param options - only what differs from the defaults: limit 500, debug false, bindHotKeys false
+     */
+    constructor(options: Partial<JSUndoManagerOptions> = {}) {
         // the defaults stay for an option that is not given (limit 500)
         Object.assign(this.options, options);
 
