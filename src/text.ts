@@ -123,7 +123,9 @@ export function safeReplaceString(source: string, str: string, newStr: string, {
  * @category Text
  */
 export function longestCommonPrefix(words: string[]): string {
-    words.sort() // shortest string will be first and the longest last
+    if (!words.length) return ''
+    // sorted as text (a copy: the caller's array keeps its order), the first and the last differ the most
+    words = [...words].sort()
     return (
         words[0].split('') // converts shortest word to an array of chars
             .map((char, idx) => words[words.length - 1][idx] === char ? char : '\0') // replaces non-matching chars with NULL char

@@ -49,6 +49,8 @@ export class Serialization{
                     if (obj.length <= i) obj.push(de)
                     else obj[i] = de
                 }
+                // the saved array is the whole array: items past its length go
+                if (obj.length > l) obj.length = l
                 return obj
             },
         },
@@ -56,7 +58,7 @@ export class Serialization{
             priority: 0,
             isType: (obj: any) => !obj || typeof obj !== 'object',
             serialize: (obj: any)=> {
-                if (obj && typeof obj === 'number') {
+                if (typeof obj === 'number' && !isFinite(obj)) { // NaN is falsy too
                     if (obj === Infinity) return 'Infinity'
                     if (obj === -Infinity) return '-Infinity'
                     if (isNaN(obj)) return 'NaN'
