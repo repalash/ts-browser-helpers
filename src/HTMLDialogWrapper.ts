@@ -161,17 +161,31 @@ function toastHost(container: HTMLElement) {
     return host
 }
 
-function showToast(message: string, {kind = 'info', duration, container = document.body}: IDialogToastOptions = {}) {
+function showToast(message: string, {kind = 'info', duration, container = document.body, action}: IDialogToastOptions = {}) {
     setupStyle()
     const host = toastHost(container)
     const toast = document.createElement('div')
     toast.className = 'dialog-toast dialog-toast-' + kind
-    toast.textContent = message
+    const text = document.createElement('span')
+    text.textContent = message
+    toast.appendChild(text)
     if (kind === 'error') toast.setAttribute('role', 'alert')
     let timer = 0
     const remove = () => {
         window.clearTimeout(timer)
         toast.remove()
+    }
+    if (action) {
+        const button = document.createElement('button')
+        button.type = 'button'
+        button.className = 'dialog-toast-action'
+        button.textContent = action.label
+        button.addEventListener('click', (e) => {
+            e.stopPropagation() // the toast's own click only closes it
+            remove()
+            action.onClick()
+        })
+        toast.appendChild(button)
     }
     toast.addEventListener('click', remove)
     toastRemovers.set(toast, remove)

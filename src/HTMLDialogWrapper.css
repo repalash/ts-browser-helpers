@@ -229,6 +229,26 @@
 .dialog-toast-error::before {
     background: #f24822;
 }
+/* the action button of a toast: text in the action colour, set with --dialog-toast-action */
+.dialog-toast-action {
+    flex: none;
+    margin: -3px -4px -3px 4px;
+    padding: 3px 4px;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: var(--dialog-toast-action, #7cc4ff);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+.dialog-toast-action:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+.dialog-toast-action:focus-visible {
+    outline: 2px solid var(--dialog-toast-action, #7cc4ff);
+    outline-offset: 1px;
+}
 @keyframes dialog-toast-in {
     from { opacity: 0; transform: translateY(-4px); }
 }
