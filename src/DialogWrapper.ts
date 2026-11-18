@@ -23,7 +23,10 @@ export interface IDialogToastOptions {
     kind?: DialogToastKind
     /** How long the toast stays, in ms. `0` keeps it until a click. Default: 4000, an error twice that. */
     duration?: number
-    /** The element to show it in, like the container of a canvas. Default: the page. */
+    /**
+     * The element to show it in, like the container of a canvas. The toasts are placed at its top, so it must be positioned
+     * (`position: relative`, `absolute` or `fixed`, not `static`). Default: the page.
+     */
     container?: HTMLElement
     /** A button in the toast. A dialog wrapper without one (the browser's) leaves it out. */
     action?: IDialogToastAction
