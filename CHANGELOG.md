@@ -4,7 +4,8 @@
 
 ### Features
 
-- **Toasts:** `action` in the toast options, a button like "Report" or "Retry" (`{label, onClick}`, `IDialogToastAction`): htmlDialogWrapper shows it after the message, in the colour `--dialog-toast-action`; a click calls `onClick` and closes the toast. The browser's wrapper (`windowDialogWrapper`) leaves it out.
+- **Toasts:** `action` in the toast options, a button like "Report" or "Retry" (`{label, onClick}`, `IDialogToastAction`): htmlDialogWrapper shows it after the message, in the colour `--dialog-toast-action` (made for the dark toast: an app with a light `--dialog-toast-bg` sets it too); a click calls `onClick` and closes the toast. A toast with an action stays longer (8 s, an error 10 s), its button is a 44 px target on a touch screen, and a newer toast pushes out the oldest one without an action first. The browser's wrapper (`windowDialogWrapper`) leaves the action out.
+- **Toasts:** htmlDialogWrapper pauses a toast's timer while the pointer is on it or it has the focus, and goes on with the time it had left (WCAG 2.2.1).
 - **Toasts:** `source` and `error` in the toast options: who shows the toast (like a threepipe plugin's type, `'CanvasRecorder'`) and the error it is about. They are not shown. An app wraps `toast` once to change the message of one source or one error, add an action, or show nothing:
   ```ts
   const base = ThreeViewer.Dialog

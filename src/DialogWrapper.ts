@@ -21,7 +21,10 @@ export interface IDialogToastAction {
 export interface IDialogToastOptions {
     /** A message (default), a warning or an error */
     kind?: DialogToastKind
-    /** How long the toast stays, in ms. `0` keeps it until a click. Default: 4000, an error twice that. */
+    /**
+     * How long the toast stays, in ms. `0` keeps it until a click. Default: 4000, an error 8000; with an `action` 8000, an
+     * error 10000. htmlDialogWrapper pauses it while the pointer is on the toast or it has the focus.
+     */
     duration?: number
     /**
      * The element to show it in, like the container of a canvas. The toasts are placed at its top, so it must be positioned

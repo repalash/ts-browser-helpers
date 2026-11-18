@@ -183,7 +183,8 @@
 }
 
 /* the toasts (htmlDialogWrapper.toast): small dark chips at the top centre of the page, or of the element given as
-   `container`. Set `--dialog-toast-top` to move them down (under a bar), `--dialog-toast-bg` for another colour. */
+   `container`. Set `--dialog-toast-top` to move them down (under a bar), `--dialog-toast-bg` for another colour. The
+   action button's colour, `--dialog-toast-action`, is for the dark toast: with a light --dialog-toast-bg, set it too. */
 .dialog-toasts {
     position: fixed;
     top: var(--dialog-toast-top, 12px);
@@ -248,6 +249,14 @@
 .dialog-toast-action:focus-visible {
     outline: 2px solid var(--dialog-toast-action, #7cc4ff);
     outline-offset: 1px;
+}
+/* a 44 px target on a touch screen (after the rule above, so it wins); the negative margins keep the toast as small as it looks */
+@media (pointer: coarse) {
+    .dialog-toast-action {
+        min-height: 44px;
+        margin: -14px -8px -14px 0;
+        padding: 0 10px;
+    }
 }
 @keyframes dialog-toast-in {
     from { opacity: 0; transform: translateY(-4px); }

@@ -175,6 +175,21 @@ function showToast(message: string, {kind = 'info', duration, container = docume
         window.clearTimeout(timer)
         toast.remove()
     }
+    // how long it stays: longer with an action, to reach the button; paused while the pointer is on it or it has the
+    // focus (WCAG 2.2.1), and going on with the time it had left
+    let left = duration ?? (action ? 8000 : 4000) + (kind === 'error' ? (action ? 2000 : 4000) : 0)
+    let since = 0
+    const start = () => {
+        if (left <= 0 || timer) return
+        since = performance.now()
+        timer = window.setTimeout(remove, left)
+    }
+    const pause = () => {
+        if (!timer) return
+        window.clearTimeout(timer)
+        timer = 0
+        left = Math.max(1000, left - (performance.now() - since))
+    }
     if (action) {
         const button = document.createElement('button')
         button.type = 'button'
@@ -188,13 +203,21 @@ function showToast(message: string, {kind = 'info', duration, container = docume
         toast.appendChild(button)
     }
     toast.addEventListener('click', remove)
+    if (left > 0) {
+        toast.addEventListener('pointerenter', pause)
+        toast.addEventListener('pointerleave', start)
+        toast.addEventListener('focusin', pause)
+        toast.addEventListener('focusout', start)
+    }
     toastRemovers.set(toast, remove)
+    if (action) toast.dataset.action = ''
     host.appendChild(toast)
-    const time = duration ?? 4000 * (kind === 'error' ? 2 : 1)
-    if (time > 0) timer = window.setTimeout(remove, time)
-    // not a click: it would reach the click listeners of the page
+    start()
+    // not a click: it would reach the click listeners of the page. The oldest toast without an action goes first, so a
+    // newer message doesn't take away a button someone may still want
     while (host.children.length > MAX_TOASTS) {
-        const old = host.firstElementChild!
+        const children = Array.from(host.children)
+        const old = children.find(c => !(c as HTMLElement).hasAttribute('data-action')) ?? children[0]
         const removeOld = toastRemovers.get(old)
         if (removeOld) removeOld()
         else old.remove()
