@@ -49,6 +49,7 @@ export function downloadFile(b: File, name?: string) {
  * @param multiple - allow multiple files
  * @param directory - allow directory
  * @param accept - file types to accept (default: all), e.g. 'image/*'
+ * @returns the chosen files, or an empty array when the picker is cancelled
  * @category Browser
  */
 export async function uploadFile(multiple = false, directory = false, accept?: string): Promise<File[]> {
@@ -64,6 +65,8 @@ export async function uploadFile(multiple = false, directory = false, accept?: s
         input.onchange = _e => {
             resolve(Array.from(input.files || []))
         }
+        // the picker closed with no file: no files (the cancel event: Chrome 113, Safari 16.4, Firefox 91)
+        input.addEventListener('cancel', () => resolve([]))
     })
     document.body.removeChild(input)
     return files

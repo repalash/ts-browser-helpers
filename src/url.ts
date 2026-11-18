@@ -16,7 +16,8 @@ export function getUrlQueryParam(p: string, def: string | null = null): string |
  * Set URL query parameter. If value is null, remove parameter. Similar to PHP's $_GET
  * @param p - parameter name to set
  * @param v - parameter value or null to remove
- * @param reload - reload page after setting parameter, default false. If false, `history.replaceState` is used.
+ * @param reload - reload page after setting parameter, default false. If false, `history.replaceState` is used: the
+ * path, the `#hash` and the history state stay as they are.
  *
  * @category URL
  */
@@ -27,9 +28,10 @@ export function setUrlQueryParam(p: string, v: string|null, reload = false) { //
         if (params.has(p))
             params.delete(p)
     } else params.set(p, v)
-    if (!reload)
-        window.history.replaceState({}, '', '?' + params.toString()) // todo: check if default state and set to /
-    else
+    if (!reload) {
+        const query = params.toString()
+        window.history.replaceState(window.history.state, '', window.location.pathname + (query ? '?' + query : '') + window.location.hash)
+    } else
         window.location.search = params.toString()
 }
 
