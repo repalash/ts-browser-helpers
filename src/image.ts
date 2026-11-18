@@ -171,8 +171,8 @@ export function imageToCanvas(image: HTMLImageElement, {
     canvas.width = canvasWidth * ratio
     canvas.height = canvasHeight * ratio
 
-    canvas.style.width = `${canvasWidth}`
-    canvas.style.height = `${canvasHeight}`
+    canvas.style.width = `${canvasWidth}px`
+    canvas.style.height = `${canvasHeight}px`
 
     if (backgroundColor?.length > 0) {
         context.fillStyle = backgroundColor

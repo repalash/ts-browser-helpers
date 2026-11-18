@@ -1,33 +1,38 @@
 import {ImageCanvasOptions, imageToCanvas} from "./image";
 import {createImage} from "./dom";
+import {cssColor} from "./color";
+import {escapeHtml} from "./text";
+
+/** A colour for an attribute of an SVG in a data url (a `'` would end the attribute) */
+const svgColor = (c: string) => encodeURIComponent(cssColor(c)).replace(/'/g, '%27')
 
 /**
  * Returns a data url for a 16x16 svg rectangle with the given color.
- * @param c - color
+ * @param c - a CSS colour (`#ff8800`, `red`, `rgb(...)`), or a hex colour without `#` (`ff8800`)
  *
  * @category SVGs
  */
 export const makeColorSvg = (c: string): string => {
-    return `data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='16' height='16' fill='%23${c}'/%3E%3C/svg%3E%0A`
+    return `data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='16' height='16' fill='${svgColor(c)}'/%3E%3C/svg%3E%0A`
 }
 /**
  * Returns a data url for a 16x16 svg circle with the given color.
- * @param c - color
+ * @param c - a CSS colour (`#ff8800`, `red`, `rgb(...)`), or a hex colour without `#` (`ff8800`)
  *
  * @category SVGs
  */
 export const makeColorSvgCircle = (c: string): string => {
-    return `data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='8' cy='8' r='7' fill='%23${c}'/%3E%3C/svg%3E%0A`
+    return `data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='8' cy='8' r='7' fill='${svgColor(c)}'/%3E%3C/svg%3E%0A`
 }
 
 /**
  * Returns a data url for a svg with the given text.
- * @param text
+ * @param text - plain text; `<`, `&`, `#` and the like are escaped
  *
  * @category SVGs
  */
 export const makeTextSvg = (text: string): string => {
-    return `data:image/svg+xml,%3Csvg viewBox='0 0 80 14' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext style='font: 8px "Roboto Mono", "Source Code Pro", Menlo, Courier, monospace; fill: white;' x='9' y='9'%3E${text}%3C/text%3E%3C/svg%3E%0A`
+    return `data:image/svg+xml,%3Csvg viewBox='0 0 80 14' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext style='font: 8px "Roboto Mono", "Source Code Pro", Menlo, Courier, monospace; fill: white;' x='9' y='9'%3E${encodeURIComponent(escapeHtml(text))}%3C/text%3E%3C/svg%3E%0A`
 }
 
 /**

@@ -14,7 +14,7 @@ export {TYPED_ARRAYS, arrayBufferToBase64, base64ToArrayBuffer, getTypedArray} f
 export {escapeRegExp, getFilenameFromPath, parseFileExtension, replaceAll, toTitleCase, longestCommonPrefix, toCamelCase, safeReplaceString, escapeHtml} from './text'
 export {prettyScrollbar} from './styles'
 export {blobToDataURL, downloadBlob, downloadFile, uploadFile, mobileAndTabletCheck} from './browser'
-export {LinearToSRGB, SRGBToLinear, colorToDataUrl} from './color'
+export {LinearToSRGB, SRGBToLinear, colorToDataUrl, cssColor} from './color'
 export {onChange, onChange2, onChange3, onChangeDispatchEvent, serialize, serializable, type OnChangeDispatchEventType} from './decorators'
 export {aesGcmDecrypt, aesGcmEncrypt} from './encryption'
 export {verifyPermission, writeFile, getFileHandle, getNewFileHandle, readFile} from './fs-api'
