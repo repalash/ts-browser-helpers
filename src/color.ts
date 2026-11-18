@@ -18,8 +18,18 @@ export function LinearToSRGB( c: number): number {
 }
 
 /**
+ * A CSS colour from a colour string: a hex colour without `#` (`ff8800`, the form the helpers used to need) gets one;
+ * anything else (`#ff8800`, `red`, `rgb(255 136 0)`) is used as it is.
+ * @param color - color string
+ * @category Color
+ */
+export function cssColor(color: string) {
+    return /^([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(color) ? '#' + color : color
+}
+
+/**
  * Creates an image data url from a color string.
- * @param color - color string (css compatible color)
+ * @param color - a CSS colour (`#ff8800`, `red`, `rgb(...)`), or a hex colour without `#` (`ff8800`)
  * @param width - width of the image (default: 1)
  * @param height - height of the image (default: 1)
  * @return data url
@@ -30,7 +40,7 @@ export function colorToDataUrl(color: string, width = 1, height = 1){
     canvas.width = width
     canvas.height = height
     const ctx = canvas.getContext('2d')!
-    ctx.fillStyle = '#' + color
+    ctx.fillStyle = cssColor(color)
     ctx.fillRect(0, 0, width, height)
     const url = canvas.toDataURL()
     canvas.remove()

@@ -41,7 +41,7 @@ export function htmlToSvg(html: string, style: string, {width, height}: {width: 
     ${style}
     </style>
     <foreignObject x="0" y="0" width="100%" height="100%">
-        <div xmlns="http://www.w3.org/1999/xhtml" style="height: 100%; width: 100%; position: absolute: top:0; left:0">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="height: 100%; width: 100%; position: absolute; top:0; left:0">
             ${html}
         </div>
     </foreignObject>
