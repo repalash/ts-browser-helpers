@@ -5,11 +5,11 @@
 ### Features
 
 - **Toasts:** `action` in the toast options, a button like "Report" or "Retry" (`{label, onClick}`, `IDialogToastAction`): htmlDialogWrapper shows it after the message, in the colour `--dialog-toast-action`; a click calls `onClick` and closes the toast. The browser's wrapper (`windowDialogWrapper`) leaves it out.
-- **Toasts:** `source` and `error` in the toast options: who shows the toast (like `'CanvasRecorderPlugin'`) and the error it is about. They are not shown. An app wraps `toast` once to change the message of one source or one error, add an action, or show nothing:
+- **Toasts:** `source` and `error` in the toast options: who shows the toast (like a threepipe plugin's type, `'CanvasRecorder'`) and the error it is about. They are not shown. An app wraps `toast` once to change the message of one source or one error, add an action, or show nothing:
   ```ts
   const base = ThreeViewer.Dialog
   ThreeViewer.Dialog = {...base, toast: (message, options) => {
-      if (options?.source === 'CanvasRecorderPlugin') message = 'The recording failed. Contact support@example.com'
+      if (options?.source === 'CanvasRecorder') message = 'The recording failed. Contact support@example.com'
       base.toast?.(message, options)
   }}
   ```

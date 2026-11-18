@@ -28,7 +28,7 @@ export interface IDialogToastOptions {
     /** A button in the toast. A dialog wrapper without one (the browser's) leaves it out. */
     action?: IDialogToastAction
     /**
-     * Who shows the toast, like `'CanvasRecorderPlugin'`, and the error it is about, if any. Not shown: an app that wraps
+     * Who shows the toast, like a threepipe plugin's type (`'CanvasRecorder'`), and the error it is about, if any. Not shown: an app that wraps
      * `toast` reads them to change the message of one source or one error, add an action, or show nothing.
      */
     source?: string
