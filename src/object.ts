@@ -14,7 +14,8 @@
  * @category JS Object
  */
 export function deepAccessObject(access: string | string[], tar: any, throwOnInvalid = false): any {
-    if (typeof access === 'string') access = access.split('.')
+    // a copy: the loop takes the parts off it, and a path given as an array stays as it was
+    access = typeof access === 'string' ? access.split('.') : [...access]
     while (access.length > 0) {
         if (!tar) return tar
         const p = access.splice(0, 1)[0] as string

@@ -88,21 +88,15 @@ export async function createScriptFromURL(url: string, root = document.head): Pr
  */
 export async function setInnerHTMLWithScripts(element: HTMLElement, html: string) {
     element.innerHTML = html
-    const scripts = element.getElementsByTagName('script')
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let i = 0; i < scripts.length; i++) {
-        const script = scripts[i]
+    // a script set through innerHTML does not run: each is replaced by a copy, which runs when it is in the page. An
+    // inline script runs at once; one with a src is waited for (also when it fails), so they run in order, as on a page.
+    for (const script of Array.from(element.getElementsByTagName('script'))) {
         const newScript = cloneScriptTag(script)
-        let err = false
-        await new Promise(resolve => {
-            newScript.onload = resolve
-            newScript.onerror = () => {
-                err = true
-                resolve(undefined)
-            }
-        })
-        if (err) continue
+        const loaded = newScript.src ? new Promise<void>(resolve => {
+            newScript.onload = newScript.onerror = () => resolve()
+        }) : undefined
         script.parentNode?.replaceChild(newScript, script)
+        if (loaded) await loaded
     }
 }
 
