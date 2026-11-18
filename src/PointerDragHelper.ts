@@ -7,6 +7,11 @@ import {IDisposable} from "./types";
  *
  * To use, create an object of the class, set `element` with the HTML element(like canvas) and add event listeners to drag events.
  *
+ * The coordinates are relative to the element: -1 at its left (bottom) edge, 1 at its right (top) edge. A drag starts with
+ * the primary button (or a touch or pen) and captures the pointer, so it goes on outside the element and over its children,
+ * until the pointer is released or cancelled. `drag` has the `pointer` now, the `drag` since the start and the `delta`
+ * since the last event.
+ *
  * @example
  * ```ts
  * const pointerDragHelper = new PointerDragHelper()
@@ -33,6 +38,8 @@ export class PointerDragHelper extends SimpleEventDispatcher<'dragStart' | 'drag
     private _pointerDown?: {x: number, y: number, time: number}
     private _pointer?: {x: number, y: number, time: number}
     private _pointerUp?: {x: number, y: number, time: number}
+    /** The pointer of the drag: other pointers (a second finger) are left alone */
+    private _pointerId?: number
 
     get element(): HTMLElement | undefined {
         return this._element
@@ -52,7 +59,10 @@ export class PointerDragHelper extends SimpleEventDispatcher<'dragStart' | 'drag
         this._element?.removeEventListener('pointermove', this._onPointerMove)
         this._element?.removeEventListener('pointerup', this._onPointerUp)
         this._element?.removeEventListener('pointercancel', this._onPointerUp)
-        this._element?.removeEventListener('pointerout', this._onPointerUp)
+        this._element?.removeEventListener('lostpointercapture', this._onPointerUp)
+        this._pointerDown = undefined
+        this._pointer = undefined
+        this._pointerId = undefined
     }
 
     private _addElement() {
@@ -60,41 +70,53 @@ export class PointerDragHelper extends SimpleEventDispatcher<'dragStart' | 'drag
         this._element?.addEventListener('pointermove', this._onPointerMove)
         this._element?.addEventListener('pointerup', this._onPointerUp)
         this._element?.addEventListener('pointercancel', this._onPointerUp)
-        this._element?.addEventListener('pointerout', this._onPointerUp)
+        this._element?.addEventListener('lostpointercapture', this._onPointerUp)
+    }
+
+    /** The NDC coordinates of an event in the element: -1 to 1 from its left to right, and from its bottom to top */
+    private _ndc(e: PointerEvent) {
+        const rect = this._element!.getBoundingClientRect()
+        return {
+            x: (e.clientX - rect.left) / (rect.width || 1) * 2 - 1,
+            y: -((e.clientY - rect.top) / (rect.height || 1)) * 2 + 1,
+        }
     }
 
     private _onPointerDown = (e: PointerEvent) => {
         if (e.button !== 0) return
-        if (!this._element) return
+        if (!this._element || this._pointerDown) return // one drag at a time
         this._pointerUp = undefined
-        const x = e.clientX / this._element!.clientWidth * 2 - 1
-        const y = -(e.clientY / this._element!.clientHeight) * 2 + 1
+        const {x, y} = this._ndc(e)
         const time = now()
+        this._pointerId = e.pointerId
+        // the moves and the release come to the element also outside it, and over its children
+        try {
+            this._element.setPointerCapture(e.pointerId)
+        } catch { /* a pointer that is already gone */ }
         this._pointerDown = {x, y, time}
         this._pointer = this._pointerDown
         this.dispatchEvent({type: 'dragStart', pointer: this._pointerDown})
     }
     private _onPointerMove = (e: PointerEvent) => {
-        if (!this._pointerDown || !this._pointer) return
+        if (!this._pointerDown || !this._pointer || e.pointerId !== this._pointerId) return
         if (!this._element) return
-        const x = e.clientX / this._element!.clientWidth * 2 - 1
-        const y = -(e.clientY / this._element!.clientHeight) * 2 + 1
+        const {x, y} = this._ndc(e)
         const time = now()
+        const last = this._pointer
+        this._pointer = {x, y, time}
         this.dispatchEvent({
             type: 'drag', pointer: this._pointer,
             drag: {x: x - this._pointerDown.x, y: y - this._pointerDown.y, time: time - this._pointerDown.time},
-            delta: {x: x - this._pointer.x, y: y - this._pointer.y, time: time - this._pointer.time},
+            delta: {x: x - last.x, y: y - last.y, time: time - last.time},
         })
-        this._pointer = {x: x, y: y, time: now()}
 
         if (e.buttons % 2 === 0) this._onPointerUp(e)
     }
     private _onPointerUp = (e: PointerEvent) => {
-        if (e.button !== 0) return
-        if (!this._pointerDown) return
+        // up, cancel or a lost capture of the drag's pointer ends it (their button is not always 0)
+        if (!this._pointerDown || e.pointerId !== this._pointerId) return
         if (!this._element) return
-        const x = e.clientX / this._element!.clientWidth * 2 - 1
-        const y = -(e.clientY / this._element!.clientHeight) * 2 + 1
+        const {x, y} = this._ndc(e)
         const time = now()
         this._pointerUp = {x: x, y: y, time}
         this.dispatchEvent({
@@ -107,6 +129,8 @@ export class PointerDragHelper extends SimpleEventDispatcher<'dragStart' | 'drag
         })
         this._pointerDown = undefined
         this._pointer = undefined
+        this._pointerId = undefined
+        if (this._element.hasPointerCapture?.(e.pointerId)) this._element.releasePointerCapture(e.pointerId)
     }
 
     dispose() {
