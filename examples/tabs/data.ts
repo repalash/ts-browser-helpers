@@ -39,7 +39,7 @@ export default defineTab({
         tab.demo('typed-array', 'getTypedArray', 'Makes a typed array of a type, by name, on an <code>ArrayBuffer</code>. <code>TYPED_ARRAYS</code> maps the names to the constructors.', ({select, button, log}) => {
             // #region typed-array
             const type = select('View the bytes as', Object.keys(TYPED_ARRAYS), 'Uint8Array')
-            const buffer = new Float32Array([1, 0.5, -2]).buffer // 12 bytes
+            const buffer = new Float32Array([1, 0.5, -2, 4]).buffer // 16 bytes: whole elements of every type, also the 8-byte ones
             button('View', () => {
                 log(getTypedArray(type.value as keyof typeof TYPED_ARRAYS, buffer))
             })
