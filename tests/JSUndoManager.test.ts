@@ -234,3 +234,69 @@ describe('JSUndoManager hot keys', () => {
         expect(state.value).toBe(0)
     })
 })
+
+describe('JSUndoManager preset commands', () => {
+    const counter = () => {
+        const m = manager()
+        const target = {value: 0}
+        m.presets.add = (c: any) => ({undo: () => { c.target.value -= c.by }, redo: () => { c.target.value += c.by }})
+        return {m, target}
+    }
+
+    it('records a command whose type has a preset', () => {
+        const {m, target} = counter()
+        m.execute({type: 'add', target, by: 2} as any)
+        expect(target.value).toBe(2)
+        m.undo()
+        expect(target.value).toBe(0)
+    })
+
+    it('throws on a type with no preset when recording, naming the type, and records nothing', () => {
+        const {m, target} = counter()
+        expect(() => m.record({type: 'missing', target} as any)).toThrow(/"missing"/)
+        expect(() => m.execute({type: 'missing', target} as any)).toThrow(/"missing"/)
+        expect(m.getSize()).toBe(0)
+        m.record({type: 'add', target, by: 1} as any)
+        expect(() => m.replaceLast({type: 'missing', target} as any)).toThrow(/"missing"/)
+        expect((m.peek() as any).type).toBe('add')
+    })
+
+    it('a step whose preset was removed after recording: undo and redo throw and the pointer stays', () => {
+        const {m, target} = counter()
+        m.execute({type: 'add', target, by: 1} as any)
+        m.execute({type: 'add', target, by: 10} as any)
+        const add = m.presets.add
+        delete m.presets.add
+        expect(() => m.undo()).toThrow(/"add"/)
+        expect(m.getSize()).toBe(2)
+        expect(m.canRedo()).toBe(false)
+        m.presets.add = add
+        m.undo()
+        expect(target.value).toBe(1) // the step that failed is the one undone now
+        delete m.presets.add
+        expect(() => m.redo()).toThrow(/"add"/)
+        expect(m.canRedo()).toBe(true)
+        m.presets.add = add
+        m.redo()
+        expect(target.value).toBe(11)
+    })
+})
+
+describe('JSUndoManager steps that throw', () => {
+    it('an undo that throws leaves the step done; a redo that throws leaves it undone', () => {
+        const m = manager()
+        let fail = true
+        const changes: string[] = []
+        m.addChangeListener(e => changes.push(e.action))
+        m.record({undo: () => { if (fail) throw new Error('undo failed') }, redo: () => { if (fail) throw new Error('redo failed') }})
+        expect(() => m.undo()).toThrow('undo failed')
+        expect(m.canUndo()).toBe(true)
+        expect(m.canRedo()).toBe(false)
+        fail = false
+        m.undo()
+        fail = true
+        expect(() => m.redo()).toThrow('redo failed')
+        expect(m.canRedo()).toBe(true)
+        expect(changes).toEqual(['record', 'undo']) // nothing is told for the failed ones
+    })
+})
