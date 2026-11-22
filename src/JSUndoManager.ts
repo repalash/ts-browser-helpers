@@ -276,6 +276,7 @@ export class JSUndoManager {
      */
     record(command: JSUndoManagerCommand): this {
         if(!this.enabled) return this
+        this._checkPreset(command);
         this._record(command);
         return this;
     }
@@ -283,6 +284,7 @@ export class JSUndoManager {
     replaceLast(command: JSUndoManagerCommand) {
         const last = this.peek()
         if(!last) return
+        this._checkPreset(command)
 
         this.log('replace', last, 'with', command)
 
@@ -317,15 +319,20 @@ export class JSUndoManager {
 
     _rc(command: JSUndoManagerCommand1 | JSUndoManagerCommand2) {
         if ((command as JSUndoManagerCommand2).type) {
-            const p = this.presets[(command as JSUndoManagerCommand2).type]
-            if (typeof p === 'function') {
-                return p((command as JSUndoManagerCommand2))
-            } else {
-                console.error(command, p, this.presets)
-                throw new Error(`Preset command not found`)
-            }
+            this._checkPreset(command)
+            return this.presets[(command as JSUndoManagerCommand2).type]((command as JSUndoManagerCommand2))
         } else
             return command as JSUndoManagerCommand1
+    }
+
+    /**
+     * Throws when a preset command's `type` has no function in `presets`. `record`, `replaceLast` and `execute` check
+     * this before the command joins the stack, so a missing preset shows at once and not at a later undo.
+     */
+    _checkPreset(command: JSUndoManagerCommand) {
+        const type = (command as JSUndoManagerCommand2)?.type
+        if (type && typeof this.presets[type] !== 'function')
+            throw new Error(`JSUndoManager: no preset for the command type "${type}" (add it to presets before recording)`)
     }
 
     _record(command: JSUndoManagerCommand, notify = true) {
@@ -375,13 +382,19 @@ export class JSUndoManager {
         if (!this.canUndo())
             return this;
 
-        let command = this.stack[this.sp];
+        const command = this.stack[this.sp];
+        const resolved = this._rc(command); // a command that cannot be resolved throws here, before the pointer moves
 
         this.log("undo");
 
         this.sp--;
 
-        this._rc(command).undo();
+        try {
+            resolved.undo();
+        } catch (e) {
+            this.sp++; // it did not undo: the step is still done, and the next undo tries it again
+            throw e;
+        }
         this._changed('undo', command);
 
         return this;
@@ -410,13 +423,19 @@ export class JSUndoManager {
         if (!this.canRedo())
             return this;
 
-        let command = this.stack[this.sp + 1]; //execute next command after stack pointer
+        const command = this.stack[this.sp + 1]; //execute next command after stack pointer
+        const resolved = this._rc(command); // a command that cannot be resolved throws here, before the pointer moves
 
         this.log("redo");
 
         this.sp++;
 
-        this._rc(command).redo();
+        try {
+            resolved.redo();
+        } catch (e) {
+            this.sp--; // it did not redo: the step is still undone, and the next redo tries it again
+            throw e;
+        }
         this._changed('redo', command);
 
         return this;

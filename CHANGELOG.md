@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- **JSUndoManager:** `record`, `execute` and `replaceLast` throw when a preset command's `type` has no function in `presets`, and the error names the type (`no preset for the command type "X"`). Before, the command was recorded and the error (`Preset command not found`, without the type) came at a later undo, far from the cause.
+- **JSUndoManager:** an undo or redo that fails leaves the stack pointer where it was. Before, the pointer moved first, so a step whose preset was missing or whose `undo`/`redo` threw counted as undone (or redone) anyway: the next undo went on to the step before it and the failed one was skipped for good. Nothing is told to the change listeners for a failed undo or redo.
+
 ## 0.23.0
 
 ### Features
