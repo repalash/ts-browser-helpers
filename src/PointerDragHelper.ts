@@ -55,6 +55,8 @@ export class PointerDragHelper extends SimpleEventDispatcher<'dragStart' | 'drag
     private _element?: HTMLElement
 
     private _removeElement() {
+        // a drag in progress: the old element lets go of its pointer, so later events reach what is under it
+        if (this._pointerId !== undefined && this._element?.hasPointerCapture?.(this._pointerId)) this._element.releasePointerCapture(this._pointerId)
         this._element?.removeEventListener('pointerdown', this._onPointerDown)
         this._element?.removeEventListener('pointermove', this._onPointerMove)
         this._element?.removeEventListener('pointerup', this._onPointerUp)
@@ -115,7 +117,8 @@ export class PointerDragHelper extends SimpleEventDispatcher<'dragStart' | 'drag
     private _onPointerUp = (e: PointerEvent) => {
         // up, cancel or a lost capture of the drag's pointer ends it (their button is not always 0)
         if (!this._pointerDown || e.pointerId !== this._pointerId) return
-        if (!this._element) return
+        const element = this._element // a dragEnd listener may dispose the helper or change its element
+        if (!element) return
         const {x, y} = this._ndc(e)
         const time = now()
         this._pointerUp = {x: x, y: y, time}
@@ -130,7 +133,7 @@ export class PointerDragHelper extends SimpleEventDispatcher<'dragStart' | 'drag
         this._pointerDown = undefined
         this._pointer = undefined
         this._pointerId = undefined
-        if (this._element.hasPointerCapture?.(e.pointerId)) this._element.releasePointerCapture(e.pointerId)
+        if (element.hasPointerCapture?.(e.pointerId)) element.releasePointerCapture(e.pointerId)
     }
 
     dispose() {
