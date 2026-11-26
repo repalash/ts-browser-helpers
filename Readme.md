@@ -13,7 +13,7 @@ npm install ts-browser-helpers
 
 ## Docs
 
-[API documentation](https://repalash.com/ts-browser-helpers/)
+[API documentation](https://repalash.com/ts-browser-helpers/) · [Examples](https://repalash.com/ts-browser-helpers/examples/): live demos of the helpers, each next to its code (run them locally with `npm run examples`)
 
 ## ArrayBuffer
 
