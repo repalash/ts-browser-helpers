@@ -119,6 +119,13 @@ results.addEventListener('click', (e) => {
     e.preventDefault()
     openResult(a.getAttribute('href')!)
 })
+// the tab the hash already names, clicked during a search: no hashchange, so leave the search here
+nav.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a.tab')
+    if (!a || !searchInput.value.trim() || a.getAttribute('href') !== location.hash) return
+    e.preventDefault()
+    show()
+})
 searchInput.addEventListener('input', renderResults)
 searchInput.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
