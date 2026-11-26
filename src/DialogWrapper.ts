@@ -9,13 +9,36 @@ export interface IDialogChooseOption {
  */
 export type DialogToastKind = 'info' | 'warn' | 'error'
 
+/**
+ * A button in a toast ({@link IDialogToastOptions.action}), like "Report" or "Retry"
+ */
+export interface IDialogToastAction {
+    label: string
+    /** Called on a click of the button; the toast then closes */
+    onClick: () => void
+}
+
 export interface IDialogToastOptions {
     /** A message (default), a warning or an error */
     kind?: DialogToastKind
-    /** How long the toast stays, in ms. `0` keeps it until a click. Default: 4000, an error twice that. */
+    /**
+     * How long the toast stays, in ms. `0` keeps it until a click. Default: 4000, an error 8000; with an `action` 8000, an
+     * error 10000. htmlDialogWrapper pauses it while the pointer is on the toast or it has the focus.
+     */
     duration?: number
-    /** The element to show it in, like the container of a canvas. Default: the page. */
+    /**
+     * The element to show it in, like the container of a canvas. The toasts are placed at its top, so it must be positioned
+     * (`position: relative`, `absolute` or `fixed`, not `static`). Default: the page.
+     */
     container?: HTMLElement
+    /** A button in the toast. A dialog wrapper without one (the browser's) leaves it out. */
+    action?: IDialogToastAction
+    /**
+     * Who shows the toast, like a threepipe plugin's type (`'CanvasRecorder'`), and the error it is about, if any. Not shown: an app that wraps
+     * `toast` reads them to change the message of one source or one error, add an action, or show nothing.
+     */
+    source?: string
+    error?: unknown
 }
 
 /**
