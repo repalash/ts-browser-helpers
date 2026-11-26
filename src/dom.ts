@@ -81,8 +81,12 @@ export async function createScriptFromURL(url: string, root = document.head): Pr
 
 /**
  * Sets the innerHTML of an element and recreates all script tags so they are executed.
+ * Classic scripts run in order: an inline one at once, one with a `src` waited for. A module script
+ * (`type="module"`) runs as on a page, deferred, so after the classic scripts that follow it; an inline module has no
+ * load event, so the promise does not wait for it.
  * @param element - element to set the innerHTML of
  * @param html - innerHTML string to set
+ * @returns a promise that resolves when the classic scripts have run
  *
  * @category DOM
  */
