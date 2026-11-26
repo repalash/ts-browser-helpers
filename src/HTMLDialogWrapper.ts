@@ -204,10 +204,17 @@ function showToast(message: string, {kind = 'info', duration, container = docume
     }
     toast.addEventListener('click', remove)
     if (left > 0) {
-        toast.addEventListener('pointerenter', pause)
-        toast.addEventListener('pointerleave', start)
-        toast.addEventListener('focusin', pause)
-        toast.addEventListener('focusout', start)
+        // hover and focus each hold the timer; it goes on only when neither does (a focused button under a pointer
+        // that leaves keeps it paused)
+        let hovered = false, focused = false
+        const update = () => hovered || focused ? pause() : start()
+        toast.addEventListener('pointerenter', () => { hovered = true; update() })
+        toast.addEventListener('pointerleave', () => { hovered = false; update() })
+        toast.addEventListener('focusin', () => { focused = true; update() })
+        toast.addEventListener('focusout', (e) => {
+            focused = toast.contains(e.relatedTarget as Node | null) // focus moving inside the toast keeps it
+            update()
+        })
     }
     toastRemovers.set(toast, remove)
     if (action) toast.dataset.action = ''
